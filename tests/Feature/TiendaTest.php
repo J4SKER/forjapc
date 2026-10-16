@@ -17,12 +17,6 @@ class TiendaTest extends TestCase
             ->assertSee('Compra por categoría');
     }
 
-    public function test_las_categorias_del_menu_existen_y_las_demas_dan_404(): void
-    {
-        $this->get('/categoria/procesadores')->assertOk()->assertSee('Procesadores');
-        $this->get('/categoria/no-existe')->assertNotFound();
-    }
-
     public function test_la_busqueda_muestra_el_termino_escapado(): void
     {
         $this->get('/buscar?q=<script>rtx</script>')

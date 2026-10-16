@@ -2,37 +2,54 @@
 
 namespace App\Http\Controllers\Tienda;
 
+use App\Enums\TipoComponente;
 use App\Http\Controllers\Controller;
+use App\Models\Categoria;
+use App\Models\Producto;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
-/**
- * Catálogo de la tienda. El listado de productos se implementa en el sprint de la semana 3;
- * por ahora las categorías y la búsqueda muestran una página informativa.
- */
 class CatalogoController extends Controller
 {
     public function categoria(string $slug): View
     {
-        $categoria = collect(config('tienda.categorias'))->firstWhere('slug', $slug);
+        $categoria = Categoria::query()->activas()->where('slug', $slug)->firstOrFail();
 
-        abort_if($categoria === null, 404);
-
-        return view('tienda.proximamente', [
-            'titulo' => $categoria['nombre'],
-            'icono' => $categoria['icono'],
-            'mensaje' => 'Estamos cargando el catálogo de esta categoría. Muy pronto podrás ver precios y existencias actualizados.',
-        ]);
+        return view('tienda.catalogo', ['categoria' => $categoria, 'q' => '']);
     }
 
     public function buscar(Request $request): View
     {
-        $termino = trim((string) $request->string('q'));
+        return view('tienda.catalogo', ['categoria' => null, 'q' => trim((string) $request->string('q'))]);
+    }
 
-        return view('tienda.proximamente', [
-            'titulo' => $termino === '' ? 'Buscar productos' : "Resultados para «{$termino}»",
-            'icono' => 'buscar',
-            'mensaje' => 'La búsqueda de productos estará disponible cuando el catálogo esté publicado.',
+    public function producto(string $slug): View
+    {
+        $producto = Producto::query()->visibles()->where('slug', $slug)
+            ->with(['categoria', 'marca', 'imagenes', 'resenasAprobadas.usuario:id,nombre'])
+            ->firstOrFail();
+
+        $tipo = $producto->tipoComponente();
+        if ($tipo !== null) {
+            $producto->load(match ($tipo) {
+                TipoComponente::Cpu, TipoComponente::Placa => $tipo->relacion().'.socket',
+                TipoComponente::Disipador => $tipo->relacion().'.sockets',
+                default => $tipo->relacion(),
+            });
+        }
+
+        return view('tienda.producto', [
+            'producto' => $producto,
+            'especificacion' => $producto->especificacion(),
+            'relacionados' => Producto::query()->visibles()
+                ->where('categoria_id', $producto->categoria_id)
+                ->whereKeyNot($producto->id)
+                ->with(['categoria', 'marca', 'imagenes'])
+                ->orderByRaw('existencia > reservado DESC')
+                ->orderByRaw('ABS(precio - ?)', [$producto->precio])
+                ->limit(4)
+                ->get(),
+            'calificacion' => $producto->calificacionPromedio(),
         ]);
     }
 }

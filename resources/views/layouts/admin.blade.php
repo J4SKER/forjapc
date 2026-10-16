@@ -3,17 +3,39 @@
 
     $usuario = Auth::user();
 
-    // Secciones del panel. Las marcadas "pronto" se habilitan en los siguientes sprints.
-    $secciones = [
-        ['Inicio', 'panel', route('admin.inicio'), 'admin.inicio', [Rol::Admin, Rol::Vendedor, Rol::Tecnico, Rol::Contador], false],
-        ['Pedidos', 'paquete', null, null, [Rol::Admin, Rol::Vendedor], true],
-        ['Catálogo', 'tienda', null, null, [Rol::Admin, Rol::Vendedor], true],
-        ['Inventario y compras', 'lista', null, null, [Rol::Admin, Rol::Vendedor, Rol::Contador], true],
-        ['Taller de armado', 'herramienta', null, null, [Rol::Admin, Rol::Tecnico], true],
-        ['Contabilidad', 'tarjeta', null, null, [Rol::Admin, Rol::Contador], true],
-        ['Usuarios', 'usuarios', route('admin.usuarios.index'), 'admin.usuarios.*', [Rol::Admin], false],
-        ['Parámetros', 'ajustes', route('admin.parametros.index'), 'admin.parametros.*', [Rol::Admin], false],
-        ['Bitácora', 'candado', route('admin.bitacora.index'), 'admin.bitacora.*', [Rol::Admin], false],
+    $todos = [Rol::Admin, Rol::Vendedor, Rol::Tecnico, Rol::Contador];
+    $ventas = [Rol::Admin, Rol::Vendedor];
+
+    // Menú por grupos: [nombre, icono, ruta (null = próximamente), patrón activo, roles].
+    $grupos = [
+        '' => [
+            ['Inicio', 'panel', 'admin.inicio', 'admin.inicio', $todos],
+        ],
+        'Ventas' => [
+            ['Pedidos', 'paquete', null, null, $ventas],
+        ],
+        'Catálogo' => [
+            ['Productos', 'tienda', 'admin.productos.index', 'admin.productos.*', $ventas],
+            ['Categorías', 'lista', 'admin.categorias.index', 'admin.categorias.*', $ventas],
+            ['Marcas', 'escudo', 'admin.marcas.index', 'admin.marcas.*', $ventas],
+            ['Reseñas', 'chat', 'admin.resenas.index', 'admin.resenas.*', $ventas],
+        ],
+        'Inventario' => [
+            ['Existencias y kardex', 'paquete', 'admin.inventario.index', 'admin.inventario.*', [...$ventas, Rol::Contador]],
+            ['Compras', 'carrito', 'admin.compras.index', 'admin.compras.*', [...$ventas, Rol::Contador]],
+            ['Proveedores', 'camion', 'admin.proveedores.index', 'admin.proveedores.*', $ventas],
+        ],
+        'Taller' => [
+            ['Órdenes de armado', 'herramienta', null, null, [Rol::Admin, Rol::Tecnico]],
+        ],
+        'Finanzas' => [
+            ['Contabilidad', 'tarjeta', null, null, [Rol::Admin, Rol::Contador]],
+        ],
+        'Sistema' => [
+            ['Usuarios', 'usuarios', 'admin.usuarios.index', 'admin.usuarios.*', [Rol::Admin]],
+            ['Parámetros', 'ajustes', 'admin.parametros.index', 'admin.parametros.*', [Rol::Admin]],
+            ['Bitácora', 'candado', 'admin.bitacora.index', 'admin.bitacora.*', [Rol::Admin]],
+        ],
     ];
 @endphp
 <!DOCTYPE html>
@@ -44,22 +66,28 @@
             </a>
 
             <nav class="flex-1 space-y-0.5 overflow-y-auto px-3 py-2" aria-label="Panel administrativo">
-                @foreach ($secciones as [$nombre, $icono, $url, $patron, $roles, $pronto])
-                    @continue(! $usuario->tieneRolEfectivo(...$roles))
-                    @if ($pronto)
-                        <span class="flex cursor-not-allowed items-center gap-3 rounded-lg px-3 py-2 text-sm text-marca-100/40" title="Disponible en un próximo sprint">
-                            <x-icono :nombre="$icono" /> {{ $nombre }}
-                            <span class="ml-auto text-[10px] uppercase">Pronto</span>
-                        </span>
-                    @else
-                        <a href="{{ $url }}" @class([
-                            'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition',
-                            'bg-marca-700 font-semibold text-white' => request()->routeIs($patron),
-                            'hover:bg-marca-800 hover:text-white' => ! request()->routeIs($patron),
-                        ])>
-                            <x-icono :nombre="$icono" /> {{ $nombre }}
-                        </a>
+                @foreach ($grupos as $grupo => $secciones)
+                    @php($visibles = array_filter($secciones, fn ($s) => $usuario->tieneRolEfectivo(...$s[4])))
+                    @continue($visibles === [])
+                    @if ($grupo !== '')
+                        <p class="px-3 pt-4 pb-1 text-[10px] font-semibold tracking-widest text-marca-100/50 uppercase">{{ $grupo }}</p>
                     @endif
+                    @foreach ($visibles as [$nombre, $icono, $ruta, $patron])
+                        @if ($ruta === null)
+                            <span class="flex cursor-not-allowed items-center gap-3 rounded-lg px-3 py-2 text-sm text-marca-100/40" title="Disponible en un próximo sprint">
+                                <x-icono :nombre="$icono" /> {{ $nombre }}
+                                <span class="ml-auto text-[10px] uppercase">Pronto</span>
+                            </span>
+                        @else
+                            <a href="{{ route($ruta) }}" @class([
+                                'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition',
+                                'bg-marca-700 font-semibold text-white' => request()->routeIs($patron),
+                                'hover:bg-marca-800 hover:text-white' => ! request()->routeIs($patron),
+                            ])>
+                                <x-icono :nombre="$icono" /> {{ $nombre }}
+                            </a>
+                        @endif
+                    @endforeach
                 @endforeach
             </nav>
 

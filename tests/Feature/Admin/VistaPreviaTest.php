@@ -29,7 +29,7 @@ class VistaPreviaTest extends TestCase
         $this->get('/admin')
             ->assertOk()
             ->assertSee('Estás viendo el panel como')
-            ->assertSee('Taller de armado')
+            ->assertSee('Órdenes de armado')
             ->assertDontSee('Bitácora');
 
         $this->get('/admin/usuarios')->assertForbidden();

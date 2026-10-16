@@ -1,5 +1,5 @@
 @php
-    $categoriasMenu = config('tienda.categorias');
+    $categoriasMenu = \App\Models\Categoria::menu();
 @endphp
 
 <header x-data="{ menuMovil: false, categorias: false }" class="sticky top-0 z-40 shadow-md">
@@ -113,7 +113,7 @@
             <a href="{{ route('tienda.configurador') }}" class="flex items-center gap-1.5 px-4 py-3 text-sm font-semibold text-acento-600 hover:text-acento-700">
                 <x-icono nombre="herramienta" class="size-4" /> Arma tu PC
             </a>
-            @foreach (array_slice($categoriasMenu, 0, 4) as $categoria)
+            @foreach ($categoriasMenu->take(4) as $categoria)
                 <a href="{{ route('tienda.categoria', $categoria['slug']) }}" class="px-3 py-3 text-sm font-medium text-slate-700 hover:text-marca-600">{{ $categoria['nombre'] }}</a>
             @endforeach
             <a href="{{ route('tienda.categoria', 'monitores') }}" class="px-3 py-3 text-sm font-medium text-slate-700 hover:text-marca-600">Monitores</a>

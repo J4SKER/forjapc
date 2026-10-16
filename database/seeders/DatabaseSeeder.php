@@ -23,6 +23,8 @@ class DatabaseSeeder extends Seeder
 
         // En producción el administrador se crea con "php artisan forjapc:crear-admin".
         if (app()->isProduction()) {
+            $this->call(CatalogoSeeder::class);
+
             return;
         }
 
@@ -38,5 +40,7 @@ class DatabaseSeeder extends Seeder
         foreach ($cuentas as [$rol, $nombre, $email]) {
             User::factory()->conRol($rol)->create(['nombre' => $nombre, 'email' => $email]);
         }
+
+        $this->call(CatalogoSeeder::class);
     }
 }

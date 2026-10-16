@@ -77,7 +77,7 @@
             <h2 class="text-xl font-bold text-slate-900 sm:text-2xl">Compra por categoría</h2>
         </div>
         <div class="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
-            @foreach (config('tienda.categorias') as $categoria)
+            @foreach (\App\Models\Categoria::menu() as $categoria)
                 <a href="{{ route('tienda.categoria', $categoria['slug']) }}"
                    class="group flex flex-col items-center gap-2 rounded-xl border border-slate-200 bg-white px-2 py-5 text-center shadow-sm transition hover:-translate-y-0.5 hover:border-marca-500 hover:shadow-md">
                     <span class="rounded-full bg-marca-50 p-3 text-marca-600 transition group-hover:bg-marca-600 group-hover:text-white">
@@ -88,6 +88,37 @@
             @endforeach
         </div>
     </section>
+
+    {{-- Ofertas --}}
+    @if ($ofertas->isNotEmpty())
+        <section class="mx-auto mt-10 max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="mb-4 flex items-end justify-between">
+                <h2 class="flex items-center gap-2 text-xl font-bold text-slate-900 sm:text-2xl">
+                    <span class="rounded-md bg-acento-600 px-2 py-0.5 text-sm font-bold text-white">OFERTAS</span> Precios especiales
+                </h2>
+            </div>
+            <div class="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+                @foreach ($ofertas as $producto)
+                    <x-producto-card :producto="$producto" />
+                @endforeach
+            </div>
+        </section>
+    @endif
+
+    {{-- Destacados --}}
+    @if ($destacados->isNotEmpty())
+        <section class="mx-auto mt-10 max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="mb-4 flex items-end justify-between">
+                <h2 class="text-xl font-bold text-slate-900 sm:text-2xl">Productos destacados</h2>
+                <a href="{{ route('tienda.buscar') }}" class="text-sm font-semibold text-marca-600 hover:underline">Ver todo</a>
+            </div>
+            <div class="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
+                @foreach ($destacados as $producto)
+                    <x-producto-card :producto="$producto" />
+                @endforeach
+            </div>
+        </section>
+    @endif
 
     {{-- Configurador --}}
     <section class="mx-auto mt-10 max-w-7xl px-4 sm:px-6 lg:px-8">

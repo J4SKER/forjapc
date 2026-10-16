@@ -31,7 +31,7 @@
         <div>
             <p class="mb-3 font-semibold text-white">Categorías</p>
             <ul class="space-y-2">
-                @foreach (array_slice(config('tienda.categorias'), 0, 6) as $categoria)
+                @foreach (\App\Models\Categoria::menu()->take(6) as $categoria)
                     <li><a href="{{ route('tienda.categoria', $categoria['slug']) }}" class="hover:text-white">{{ $categoria['nombre'] }}</a></li>
                 @endforeach
             </ul>
