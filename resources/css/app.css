@@ -1,0 +1,27 @@
+@import 'tailwindcss';
+@plugin '@tailwindcss/forms';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../views';
+
+@theme {
+    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+
+    /* Marca ForjaPC: azul marino y rojo de la propuesta */
+    --color-marca-50: #eef3fa;
+    --color-marca-100: #d6e1f1;
+    --color-marca-500: #2d4f86;
+    --color-marca-600: #233f6d;
+    --color-marca-700: #1c3258;
+    --color-marca-800: #152645;
+    --color-marca-900: #0e1a31;
+
+    --color-acento-500: #e11d2a;
+    --color-acento-600: #c00f1c;
+    --color-acento-700: #9d0c17;
+}
+
+[x-cloak] {
+    display: none !important;
+}
