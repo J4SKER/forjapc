@@ -39,7 +39,7 @@ class ReporteService
             'ventas_mes' => (float) (clone $mes)->sum('total'),
             'pedidos_mes' => $pedidosMes,
             'ticket_promedio' => $pedidosMes > 0 ? round((float) (clone $mes)->sum('total') / $pedidosMes, 2) : 0.0,
-            'por_estado' => Pedido::query()->selectRaw('estado, COUNT(*) as total')->groupBy('estado')->pluck('total', 'estado'),
+            'por_estado' => Pedido::query()->selectRaw('estado, COUNT(*) as total')->groupBy('estado')->pluck('total', 'estado')->map(fn ($total) => (int) $total),
             'ultimos_dias' => $this->ventasPorDia($hoy->subDays(13), $hoy),
             'stock_bajo' => (int) DB::table('v_existencias')->where('stock_bajo', 1)->count(),
             'pagos_por_verificar' => Pago::query()->where('estado', EstadoPago::Pendiente)->where('metodo', MetodoPago::Transferencia)->whereNotNull('comprobante_ruta')->count(),

@@ -8,6 +8,7 @@ use App\Http\Requests\Admin\UsuarioRequest;
 use App\Models\BitacoraAuditoria;
 use App\Models\User;
 use App\Services\BitacoraService;
+use App\Support\Csv;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -46,7 +47,7 @@ class UsuarioController extends Controller
 
             $consulta->chunk(500, function ($usuarios) use ($archivo) {
                 foreach ($usuarios as $usuario) {
-                    fputcsv($archivo, [
+                    fputcsv($archivo, array_map(Csv::celda(...), [
                         $usuario->id,
                         $usuario->nombre,
                         $usuario->email,
@@ -57,7 +58,7 @@ class UsuarioController extends Controller
                         $usuario->email_verified_at ? 'Sí' : 'No',
                         $usuario->ultimo_acceso?->format('d/m/Y H:i'),
                         $usuario->created_at->format('d/m/Y H:i'),
-                    ]);
+                    ]));
                 }
             });
 

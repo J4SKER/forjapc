@@ -19,7 +19,7 @@
                 </div>
                 <h3 class="mt-4 text-sm font-semibold text-slate-700">Piezas a ensamblar</h3>
                 <ul class="mt-2 divide-y divide-slate-100 text-sm">
-                    @foreach ($orden->piezas as $pieza)
+                    @foreach ($orden->piezas() as $pieza)
                         <li class="flex justify-between py-1.5"><span><span class="text-xs text-slate-400">{{ $pieza->producto->categoria->nombre }}:</span> {{ $pieza->descripcion }}</span><span>× {{ $pieza->cantidad }}</span></li>
                     @endforeach
                 </ul>

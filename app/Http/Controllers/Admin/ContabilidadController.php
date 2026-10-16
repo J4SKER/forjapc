@@ -60,7 +60,7 @@ class ContabilidadController extends Controller
             'lineas.*.codigo' => ['required', Rule::exists('cuentas_contables', 'codigo')->where('acepta_movimientos', true)],
             'lineas.*.debe' => ['nullable', 'numeric', 'min:0'],
             'lineas.*.haber' => ['nullable', 'numeric', 'min:0'],
-        ], [], ['lineas' => 'líneas de la partida', 'lineas.*.codigo' => 'cuenta']);
+        ], [], ['lineas' => 'líneas de la partida', 'lineas.*.codigo' => 'cuenta', 'lineas.*.debe' => 'debe', 'lineas.*.haber' => 'haber']);
 
         try {
             $partida = $this->contabilidad->registrar(

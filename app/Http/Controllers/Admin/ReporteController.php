@@ -78,7 +78,7 @@ class ReporteController extends Controller
 
     public function balance(Request $request): View|StreamedResponse
     {
-        $hasta = $request->filled('hasta') ? CarbonImmutable::parse($request->input('hasta')) : CarbonImmutable::today();
+        $hasta = $this->fecha($request->input('hasta')) ?? CarbonImmutable::today();
         $balance = $this->reportes->balanceComprobacion($hasta);
 
         if ($request->input('formato') === 'csv') {
@@ -112,9 +112,21 @@ class ReporteController extends Controller
      */
     private function rango(Request $request): array
     {
-        $desde = $request->filled('desde') ? CarbonImmutable::parse($request->input('desde')) : CarbonImmutable::today()->startOfMonth();
-        $hasta = $request->filled('hasta') ? CarbonImmutable::parse($request->input('hasta')) : CarbonImmutable::today();
+        $desde = $this->fecha($request->input('desde')) ?? CarbonImmutable::today()->startOfMonth();
+        $hasta = $this->fecha($request->input('hasta')) ?? CarbonImmutable::today();
 
         return $desde->greaterThan($hasta) ? [$hasta, $desde] : [$desde, $hasta];
+    }
+
+    /**
+     * Interpreta una fecha AAAA-MM-DD del filtro; si no es válida se ignora.
+     */
+    private function fecha(mixed $valor): ?CarbonImmutable
+    {
+        if (! is_string($valor) || ! preg_match('/^\d{4}-\d{2}-\d{2}$/', $valor) || ! checkdate((int) substr($valor, 5, 2), (int) substr($valor, 8, 2), (int) substr($valor, 0, 4))) {
+            return null;
+        }
+
+        return CarbonImmutable::parse($valor);
     }
 }

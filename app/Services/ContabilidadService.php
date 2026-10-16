@@ -49,6 +49,7 @@ class ContabilidadService
         $fecha ??= now();
 
         return DB::transaction(function () use ($descripcion, $lineas, $tipo, $fecha, $origenTipo, $origenId, $revierte, $debe, $haber) {
+            $this->asegurarSinCierresPosteriores($fecha);
             $periodo = $this->periodoPara($fecha);
 
             if ($periodo->estaCerrado()) {
@@ -206,6 +207,22 @@ class ContabilidadService
         }
 
         $periodo->forceFill(['estado' => 'CERRADO', 'cerrado_por' => $usuario->id, 'cerrado_at' => now()])->save();
+    }
+
+    /**
+     * Si un mes ya se cerró, no se registran partidas en él ni en meses anteriores.
+     */
+    private function asegurarSinCierresPosteriores(CarbonInterface $fecha): void
+    {
+        $cierre = PeriodoContable::query()->where('estado', 'CERRADO')
+            ->where(fn ($q) => $q->where('anio', '>', $fecha->year)
+                ->orWhere(fn ($q) => $q->where('anio', $fecha->year)->where('mes', '>=', $fecha->month)))
+            ->orderByDesc('anio')->orderByDesc('mes')
+            ->first();
+
+        if ($cierre !== null) {
+            throw new DomainException("No se pueden registrar partidas con fecha {$fecha->format('d/m/Y')}: el período {$cierre->nombre()} ya está cerrado.");
+        }
     }
 
     public function periodoPara(CarbonInterface $fecha): PeriodoContable

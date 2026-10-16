@@ -11,6 +11,8 @@ class BitacoraController extends Controller
 {
     public function index(Request $request): View
     {
+        $request->validate(['desde' => ['nullable', 'date'], 'hasta' => ['nullable', 'date']]);
+
         $registros = BitacoraAuditoria::query()
             ->with('usuario:id,nombre,email')
             ->when($request->filled('accion'), fn ($query) => $query->where('accion', $request->string('accion')->value()))

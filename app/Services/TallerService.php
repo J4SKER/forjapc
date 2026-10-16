@@ -101,10 +101,20 @@ class TallerService
 
     public function reportarIncidencia(OrdenArmado $orden, string $descripcion): void
     {
+        $this->asegurarEnProceso($orden);
+
         $orden->forceFill([
             'estado' => EstadoOrdenArmado::Incidencia,
             'notas' => trim(($orden->notas ? $orden->notas."\n" : '').'Incidencia '.now()->format('d/m/Y H:i').': '.$descripcion),
         ])->save();
+    }
+
+    /**
+     * Retira del taller las órdenes sin terminar de un pedido reembolsado.
+     */
+    public function retirarOrdenesPendientes(Pedido $pedido): int
+    {
+        return $pedido->ordenesArmado()->where('estado', '!=', EstadoOrdenArmado::Completada)->delete();
     }
 
     private function asegurarEnProceso(OrdenArmado $orden): void

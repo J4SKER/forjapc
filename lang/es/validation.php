@@ -158,6 +158,13 @@ return [
     'uppercase' => 'El campo :attribute debe estar en mayúscula.',
     'url' => 'El campo :attribute debe ser una URL válida.',
     'uuid' => 'El campo :attribute debe ser un UUID válido.',
+    'values' => [
+        'fecha' => ['today' => 'hoy'],
+        'fecha_factura' => ['today' => 'hoy'],
+        'desde' => ['today' => 'hoy'],
+        'hasta' => ['today' => 'hoy'],
+    ],
+
     'attributes' => [
         'nit' => 'NIT',
         'telefono' => 'teléfono',

@@ -35,7 +35,7 @@ class TallerController extends Controller
 
     public function show(OrdenArmado $orden): View
     {
-        return view('admin.taller.show', ['orden' => $orden->load(['pedido.usuario', 'tecnico', 'piezas.producto.categoria'])]);
+        return view('admin.taller.show', ['orden' => $orden->load(['pedido.usuario', 'pedido.items.producto.categoria', 'tecnico'])]);
     }
 
     public function tomar(Request $request, OrdenArmado $orden): RedirectResponse

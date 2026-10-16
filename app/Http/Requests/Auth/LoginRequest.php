@@ -46,10 +46,9 @@ class LoginRequest extends FormRequest
      */
     public function authenticate(): void
     {
-        $this->ensureIsNotRateLimited();
-
         $user = User::query()->where('email', Str::lower($this->string('email')))->first();
 
+        // El bloqueo de la cuenta se informa antes que el límite por correo e IP.
         if ($user?->estaBloqueadoTemporalmente()) {
             throw ValidationException::withMessages([
                 'email' => __('auth.cuenta_bloqueada', [
@@ -57,6 +56,8 @@ class LoginRequest extends FormRequest
                 ]),
             ]);
         }
+
+        $this->ensureIsNotRateLimited();
 
         if ($user === null || ! Auth::validate($this->only('email', 'password'))) {
             RateLimiter::hit($this->throttleKey());

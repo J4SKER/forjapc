@@ -32,6 +32,7 @@ class PagoService
         private PedidoService $pedidos,
         private InventarioService $inventario,
         private BitacoraService $bitacora,
+        private TallerService $taller,
     ) {}
 
     /**
@@ -126,6 +127,10 @@ class PagoService
                 throw new DomainException("El pedido está «{$pedido->estado->etiqueta()}» y ya no puede recibir pagos.");
             }
 
+            if ((float) $fila->monto + 0.009 < (float) $pedido->total) {
+                throw new DomainException('El monto pagado (Q'.number_format((float) $fila->monto, 2).') es menor que el total del pedido (Q'.number_format((float) $pedido->total, 2).'). Rechaza el comprobante e indica al cliente que complete el pago.');
+            }
+
             $fila->forceFill([
                 'estado' => EstadoPago::Aprobado,
                 'verificado_por' => $verificador?->id,
@@ -210,6 +215,7 @@ class PagoService
 
             if ($esTotal) {
                 $this->pedidos->cambiarEstado($pedido, EstadoPedido::Reembolsado, "Reembolso total: {$motivo}");
+                $this->taller->retirarOrdenesPendientes($pedido);
             }
 
             $this->bitacora->registrar('reembolso_registrado', $reembolso, null, ['pedido' => $pedido->numero, 'monto' => $monto, 'total' => $esTotal]);

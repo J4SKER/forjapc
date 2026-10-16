@@ -61,6 +61,6 @@ class AccesoPorRolTest extends TestCase
     {
         $user = User::factory()->conRol(Rol::Admin)->inactivo()->create();
 
-        $this->actingAs($user)->get('/admin')->assertForbidden();
+        $this->actingAs($user)->get('/admin')->assertRedirect('/login');
     }
 }

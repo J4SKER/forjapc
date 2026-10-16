@@ -102,7 +102,7 @@
                     @forelse ($actividad as $registro)
                         <li class="flex justify-between gap-3 py-2">
                             <span>
-                                {{ Str::of($registro->accion)->replace('_', ' ')->ucfirst() }}
+                                {{ \App\Models\BitacoraAuditoria::accionLegible($registro->accion) }}
                                 <span class="block text-xs text-slate-500">por {{ $registro->usuario?->nombre ?? 'Sistema' }}</span>
                             </span>
                             <time class="shrink-0 text-xs text-slate-400">{{ $registro->created_at->diffForHumans() }}</time>

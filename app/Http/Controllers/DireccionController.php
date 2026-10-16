@@ -74,8 +74,10 @@ class DireccionController extends Controller
         Gate::authorize('update', $direccion);
 
         DB::transaction(function () use ($request, $direccion) {
-            $direccion->fill($request->validated());
-            $direccion->es_principal = $direccion->es_principal || $request->boolean('es_principal');
+            // La principal sigue siéndolo aunque se desmarque: para cambiarla se marca otra.
+            $eraPrincipal = $direccion->es_principal;
+            $direccion->fill($request->safe()->except('es_principal'));
+            $direccion->es_principal = $eraPrincipal || $request->boolean('es_principal');
             $direccion->save();
 
             $this->dejarUnicaPrincipal($request->user(), $direccion);

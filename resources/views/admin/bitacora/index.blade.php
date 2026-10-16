@@ -5,7 +5,7 @@
             <select id="accion" name="accion" class="mt-1 block w-full rounded-lg border-slate-300 text-sm shadow-sm focus:border-marca-500 focus:ring-marca-500">
                 <option value="">Todas</option>
                 @foreach ($acciones as $accion)
-                    <option value="{{ $accion }}" @selected(request('accion') === $accion)>{{ Str::of($accion)->replace('_', ' ')->ucfirst() }}</option>
+                    <option value="{{ $accion }}" @selected(request('accion') === $accion)>{{ \App\Models\BitacoraAuditoria::accionLegible($accion) }}</option>
                 @endforeach
             </select>
         </div>
@@ -37,16 +37,16 @@
                     <tr>
                         <td class="px-4 py-3 text-xs whitespace-nowrap text-slate-500">{{ $registro->created_at->format('d/m/Y H:i:s') }}</td>
                         <td class="px-4 py-3">{{ $registro->usuario?->nombre ?? 'Sistema' }}</td>
-                        <td class="px-4 py-3 font-medium">{{ Str::of($registro->accion)->replace('_', ' ')->ucfirst() }}</td>
-                        <td class="px-4 py-3 text-xs text-slate-500">{{ $registro->entidad_tipo ? "{$registro->entidad_tipo} #{$registro->entidad_id}" : '—' }}</td>
+                        <td class="px-4 py-3 font-medium">{{ \App\Models\BitacoraAuditoria::accionLegible($registro->accion) }}</td>
+                        <td class="px-4 py-3 text-xs text-slate-500">{{ $registro->entidad_tipo ? "{$registro->entidadLegible()} #{$registro->entidad_id}" : '—' }}</td>
                         <td class="px-4 py-3 text-xs">
                             @foreach ($registro->datos_nuevos ?? [] as $campo => $valor)
                                 <div>
                                     <span class="text-slate-500">{{ $campo }}:</span>
-                                    @isset($registro->datos_anteriores[$campo])
-                                        <span class="text-acento-700 line-through">{{ is_scalar($registro->datos_anteriores[$campo]) ? $registro->datos_anteriores[$campo] : json_encode($registro->datos_anteriores[$campo]) }}</span> &rarr;
-                                    @endisset
-                                    <span class="text-emerald-700">{{ is_scalar($valor) ? $valor : json_encode($valor) }}</span>
+                                    @if (array_key_exists($campo, $registro->datos_anteriores ?? []))
+                                        <span class="text-acento-700 line-through">{{ \App\Models\BitacoraAuditoria::valorLegible($registro->datos_anteriores[$campo]) }}</span> &rarr;
+                                    @endif
+                                    <span class="text-emerald-700">{{ \App\Models\BitacoraAuditoria::valorLegible($valor) }}</span>
                                 </div>
                             @endforeach
                         </td>

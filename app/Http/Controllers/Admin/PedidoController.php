@@ -29,6 +29,8 @@ class PedidoController extends Controller
 
     public function index(Request $request): View
     {
+        $request->validate(['desde' => ['nullable', 'date'], 'hasta' => ['nullable', 'date']]);
+
         $consulta = Pedido::query()->with('usuario:id,nombre,email')
             ->when($request->filled('estado'), fn (Builder $q) => $q->where('estado', $request->string('estado')->value()))
             ->when($request->filled('desde'), fn (Builder $q) => $q->whereDate('created_at', '>=', $request->date('desde')))
@@ -43,7 +45,7 @@ class PedidoController extends Controller
         return view('admin.pedidos.index', [
             'pedidos' => (clone $consulta)->latest('id')->paginate(20)->withQueryString(),
             'estados' => EstadoPedido::cases(),
-            'conteos' => Pedido::query()->selectRaw('estado, COUNT(*) as total')->groupBy('estado')->pluck('total', 'estado'),
+            'conteos' => Pedido::query()->selectRaw('estado, COUNT(*) as total')->groupBy('estado')->pluck('total', 'estado')->map(fn ($total) => (int) $total),
         ]);
     }
 
@@ -53,10 +55,21 @@ class PedidoController extends Controller
 
         return view('admin.pedidos.show', [
             'pedido' => $pedido,
-            'destinos' => array_values(array_filter($this->pedidos->destinosPosibles($pedido), fn (EstadoPedido $e) => in_array($e, self::MANUALES, true)
-                && ! ($e === EstadoPedido::Entregado && $pedido->esEnvio() && $pedido->estado === EstadoPedido::ListoEntrega)
-                && ! ($e === EstadoPedido::ListoEntrega && $pedido->estado === EstadoPedido::EnArmado))),
+            'destinos' => $this->destinosManuales($pedido),
         ]);
+    }
+
+    /**
+     * Estados que el personal puede asignar a mano a este pedido: no se salta el taller
+     * (lo cierra la orden de armado) ni se entrega un envío sin registrar la guía.
+     *
+     * @return list<EstadoPedido>
+     */
+    private function destinosManuales(Pedido $pedido): array
+    {
+        return array_values(array_filter($this->pedidos->destinosPosibles($pedido), fn (EstadoPedido $e) => in_array($e, self::MANUALES, true)
+            && ! ($e === EstadoPedido::Entregado && $pedido->esEnvio() && $pedido->estado === EstadoPedido::ListoEntrega)
+            && ! ($e === EstadoPedido::ListoEntrega && $pedido->estado === EstadoPedido::EnArmado)));
     }
 
     public function cambiarEstado(Request $request, Pedido $pedido): RedirectResponse
@@ -66,7 +79,13 @@ class PedidoController extends Controller
             'comentario' => ['nullable', 'string', 'max:255'],
         ]);
 
-        return $this->ejecutar(fn () => $this->pedidos->cambiarEstado($pedido, EstadoPedido::from($datos['estado']), $datos['comentario'] ?? null), 'Estado actualizado.');
+        $destino = EstadoPedido::from($datos['estado']);
+
+        if (! in_array($destino, $this->destinosManuales($pedido), true)) {
+            return back()->with('estado', "No se puede pasar este pedido a «{$destino->etiqueta()}» desde aquí.");
+        }
+
+        return $this->ejecutar(fn () => $this->pedidos->cambiarEstado($pedido, $destino, $datos['comentario'] ?? null), 'Estado actualizado.');
     }
 
     public function envio(Request $request, Pedido $pedido): RedirectResponse

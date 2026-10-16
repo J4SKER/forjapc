@@ -110,7 +110,7 @@
                     @forelse ($actividadReciente as $registro)
                         <li class="flex items-center justify-between gap-4 px-5 py-3 text-sm">
                             <span>
-                                <span class="font-medium text-slate-800">{{ Str::of($registro->accion)->replace('_', ' ')->ucfirst() }}</span>
+                                <span class="font-medium text-slate-800">{{ \App\Models\BitacoraAuditoria::accionLegible($registro->accion) }}</span>
                                 @if ($registro->entidad_tipo)<span class="text-slate-500">· {{ $registro->entidad_tipo }} #{{ $registro->entidad_id }}</span>@endif
                                 <span class="block text-xs text-slate-500">{{ $registro->usuario?->nombre ?? 'Sistema' }}</span>
                             </span>

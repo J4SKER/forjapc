@@ -21,10 +21,23 @@ class Csv
             fputcsv($archivo, $encabezados);
 
             foreach ($filas as $fila) {
-                fputcsv($archivo, $fila);
+                fputcsv($archivo, array_map(self::celda(...), $fila));
             }
 
             fclose($archivo);
         }, $nombre.'-'.now()->format('Ymd-His').'.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    /**
+     * Evita la inyección de fórmulas al abrir el archivo en Excel: un texto que empieza
+     * con =, +, -, @, tabulador o retorno se antepone con un apóstrofo.
+     */
+    public static function celda(mixed $valor): mixed
+    {
+        if (! is_string($valor) || $valor === '' || is_numeric($valor)) {
+            return $valor;
+        }
+
+        return in_array($valor[0], ['=', '+', '-', '@', "\t", "\r"], true) ? "'".$valor : $valor;
     }
 }

@@ -6,7 +6,7 @@ use App\Enums\EstadoOrdenArmado;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 
 /**
  * Orden de armado de una configuración pagada, con su lista de verificación y pruebas.
@@ -65,14 +65,13 @@ class OrdenArmado extends Model
     }
 
     /**
-     * Piezas de la configuración que se arma.
+     * Piezas de la configuración que se arma (líneas del pedido de su mismo grupo).
      *
-     * @return HasMany<PedidoItem, $this>
+     * @return Collection<int, PedidoItem>
      */
-    public function piezas(): HasMany
+    public function piezas(): Collection
     {
-        return $this->hasMany(PedidoItem::class, 'grupo_configuracion', 'grupo_configuracion')
-            ->where('pedido_id', $this->pedido_id);
+        return $this->pedido->items->where('grupo_configuracion', $this->grupo_configuracion)->values();
     }
 
     public function checklistCompleto(): bool
