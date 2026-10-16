@@ -29,6 +29,8 @@ class CatalogoSeeder extends Seeder
             return;
         }
 
+        $this->call(NomenclaturaSeeder::class);
+
         $this->categorias();
         foreach (['AM4', 'AM5', 'LGA1700', 'LGA1851'] as $nombre) {
             $this->sockets[$nombre] = Socket::firstOrCreate(['nombre' => $nombre])->id;

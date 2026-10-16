@@ -29,8 +29,18 @@
         'Taller' => [
             ['Órdenes de armado', 'herramienta', 'admin.taller.index', 'admin.taller.*', [Rol::Admin, Rol::Tecnico, Rol::Vendedor]],
         ],
-        'Finanzas' => [
-            ['Contabilidad', 'tarjeta', null, null, [Rol::Admin, Rol::Contador]],
+        'Contabilidad' => [
+            ['Partidas', 'lista', 'admin.contabilidad.partidas.index', 'admin.contabilidad.partidas.*', [Rol::Admin, Rol::Contador]],
+            ['Períodos', 'candado', 'admin.contabilidad.periodos.index', 'admin.contabilidad.periodos.*', [Rol::Admin, Rol::Contador]],
+            ['Nomenclatura', 'escudo', 'admin.contabilidad.cuentas.index', 'admin.contabilidad.cuentas.*', [Rol::Admin, Rol::Contador]],
+        ],
+        'Reportes' => [
+            ['Ventas', 'panel', 'admin.reportes.ventas', 'admin.reportes.ventas', [...$ventas, Rol::Contador]],
+            ['Valorización de inventario', 'paquete', 'admin.reportes.inventario', 'admin.reportes.inventario', [...$ventas, Rol::Contador]],
+            ['Libro diario', 'lista', 'admin.reportes.libro-diario', 'admin.reportes.libro-diario', [Rol::Admin, Rol::Contador]],
+            ['Libro mayor', 'lista', 'admin.reportes.libro-mayor', 'admin.reportes.libro-mayor', [Rol::Admin, Rol::Contador]],
+            ['Balance de comprobación', 'cambio', 'admin.reportes.balance', 'admin.reportes.balance', [Rol::Admin, Rol::Contador]],
+            ['Estado de resultados', 'tarjeta', 'admin.reportes.resultados', 'admin.reportes.resultados', [Rol::Admin, Rol::Contador]],
         ],
         'Sistema' => [
             ['Usuarios', 'usuarios', 'admin.usuarios.index', 'admin.usuarios.*', [Rol::Admin]],

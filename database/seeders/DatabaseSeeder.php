@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             DepartamentoSeeder::class,
             ParametroSistemaSeeder::class,
+            NomenclaturaSeeder::class,
         ]);
 
         // En producción el administrador se crea con "php artisan forjapc:crear-admin".

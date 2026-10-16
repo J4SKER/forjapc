@@ -96,6 +96,34 @@ Route::middleware(['auth', 'verified', 'rol'])->prefix('admin')->name('admin.')-
         Route::post('pagos/{pago}/rechazar', [Admin\PagoController::class, 'rechazar'])->name('pagos.rechazar');
     });
 
+    // Reportes de ventas e inventario (ventas, contabilidad y administración)
+    Route::middleware('rol:ADMIN,VENDEDOR,CONTADOR')->prefix('reportes')->name('reportes.')->group(function () {
+        Route::get('ventas', [Admin\ReporteController::class, 'ventas'])->name('ventas');
+        Route::get('inventario', [Admin\ReporteController::class, 'inventario'])->name('inventario');
+    });
+
+    // Contabilidad y estados financieros (contabilidad y administración)
+    Route::middleware('rol:ADMIN,CONTADOR')->group(function () {
+        Route::prefix('reportes')->name('reportes.')->group(function () {
+            Route::get('libro-diario', [Admin\ReporteController::class, 'libroDiario'])->name('libro-diario');
+            Route::get('libro-mayor', [Admin\ReporteController::class, 'libroMayor'])->name('libro-mayor');
+            Route::get('balance-comprobacion', [Admin\ReporteController::class, 'balance'])->name('balance');
+            Route::get('estado-resultados', [Admin\ReporteController::class, 'resultados'])->name('resultados');
+        });
+
+        Route::prefix('contabilidad')->name('contabilidad.')->group(function () {
+            Route::get('partidas', [Admin\ContabilidadController::class, 'partidas'])->name('partidas.index');
+            Route::get('partidas/nueva', [Admin\ContabilidadController::class, 'create'])->name('partidas.create');
+            Route::post('partidas', [Admin\ContabilidadController::class, 'store'])->name('partidas.store');
+            Route::get('partidas/{partida}', [Admin\ContabilidadController::class, 'show'])->name('partidas.show');
+            Route::post('partidas/{partida}/revertir', [Admin\ContabilidadController::class, 'revertir'])->name('partidas.revertir');
+            Route::get('periodos', [Admin\ContabilidadController::class, 'periodos'])->name('periodos.index');
+            Route::post('periodos/{periodo}/cerrar', [Admin\ContabilidadController::class, 'cerrarPeriodo'])->name('periodos.cerrar');
+            Route::get('cuentas', [Admin\ContabilidadController::class, 'cuentas'])->name('cuentas.index');
+            Route::post('cuentas', [Admin\ContabilidadController::class, 'guardarCuenta'])->name('cuentas.store');
+        });
+    });
+
     // Taller de armado
     Route::middleware('rol:ADMIN,TECNICO,VENDEDOR')->group(function () {
         Route::get('taller', [Admin\TallerController::class, 'index'])->name('taller.index');
