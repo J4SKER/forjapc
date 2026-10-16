@@ -23,11 +23,13 @@ class ParametroSistemaSeeder extends Seeder
             ['telefono_contacto', '+502 2222-0000', 'texto', 'Teléfono que se muestra en la tienda'],
             ['whatsapp_contacto', '50222220000', 'texto', 'Número de WhatsApp (solo dígitos, con código de país)'],
             ['correo_contacto', 'ventas@forjapc.com', 'texto', 'Correo de contacto de la tienda'],
+            ['tipo_cambio_respaldo', '7.75', 'decimal', 'Tipo de cambio (Q por US$) si no hay uno registrado del Banguat'],
             ['modo_mantenimiento', '0', 'booleano', 'Muestra la tienda en mantenimiento para los clientes'],
         ];
 
+        // Solo agrega los que faltan: no sobrescribe valores editados desde el panel.
         foreach ($parametros as [$clave, $valor, $tipo, $descripcion]) {
-            ParametroSistema::updateOrCreate(['clave' => $clave], compact('valor', 'tipo', 'descripcion'));
+            ParametroSistema::firstOrCreate(['clave' => $clave], compact('valor', 'tipo', 'descripcion'));
         }
     }
 }

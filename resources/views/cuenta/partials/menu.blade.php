@@ -1,6 +1,7 @@
 @php
     $opciones = [
         ['Resumen', 'usuario', 'dashboard', 'dashboard'],
+        ['Mis pedidos', 'paquete', 'pedidos.index', 'pedidos.*'],
         ['Mis configuraciones', 'herramienta', 'configuraciones.index', 'configuraciones.*'],
         ['Mis direcciones', 'ubicacion', 'direcciones.index', 'direcciones.*'],
         ['Perfil y seguridad', 'ajustes', 'profile.edit', 'profile.*'],
@@ -17,9 +18,6 @@
             <x-icono :nombre="$icono" class="size-5" /> {{ $nombre }}
         </a>
     @endforeach
-    <span class="flex cursor-not-allowed items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-slate-400">
-        <x-icono nombre="paquete" class="size-5" /> Mis pedidos <span class="ml-auto text-[10px] uppercase">Pronto</span>
-    </span>
     <form method="POST" action="{{ route('logout') }}" class="mt-1 border-t border-slate-100 pt-1">
         @csrf
         <button type="submit" class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-acento-700 hover:bg-slate-50">

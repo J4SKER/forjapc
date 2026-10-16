@@ -18,6 +18,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'rol' => AsegurarRol::class,
         ]);
 
+        $middleware->validateCsrfTokens(except: ['webhooks/*']);
+
         $middleware->web(append: [
             ExigirCambioPassword::class,
         ]);

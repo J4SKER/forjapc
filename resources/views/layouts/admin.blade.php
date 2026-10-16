@@ -12,7 +12,8 @@
             ['Inicio', 'panel', 'admin.inicio', 'admin.inicio', $todos],
         ],
         'Ventas' => [
-            ['Pedidos', 'paquete', null, null, $ventas],
+            ['Pedidos', 'paquete', 'admin.pedidos.index', 'admin.pedidos.*', [...$ventas, Rol::Contador]],
+            ['Pagos por verificar', 'tarjeta', 'admin.pagos.index', 'admin.pagos.*', [...$ventas, Rol::Contador]],
         ],
         'Catálogo' => [
             ['Productos', 'tienda', 'admin.productos.index', 'admin.productos.*', $ventas],
@@ -26,7 +27,7 @@
             ['Proveedores', 'camion', 'admin.proveedores.index', 'admin.proveedores.*', $ventas],
         ],
         'Taller' => [
-            ['Órdenes de armado', 'herramienta', null, null, [Rol::Admin, Rol::Tecnico]],
+            ['Órdenes de armado', 'herramienta', 'admin.taller.index', 'admin.taller.*', [Rol::Admin, Rol::Tecnico, Rol::Vendedor]],
         ],
         'Finanzas' => [
             ['Contabilidad', 'tarjeta', null, null, [Rol::Admin, Rol::Contador]],

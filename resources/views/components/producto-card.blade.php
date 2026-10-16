@@ -53,6 +53,8 @@
             </p>
         </div>
 
+        <livewire:tienda.boton-carrito :producto-id="$producto->id" :key="'tarjeta-'.$producto->id" />
+
         {{ $slot }}
     </div>
 </article>

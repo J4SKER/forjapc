@@ -4,9 +4,13 @@ use App\Http\Controllers\Admin;
 use App\Http\Controllers\ConfiguracionController;
 use App\Http\Controllers\CuentaController;
 use App\Http\Controllers\DireccionController;
+use App\Http\Controllers\PaypalController;
+use App\Http\Controllers\PedidoController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Tienda\CatalogoController;
+use App\Http\Controllers\Tienda\CheckoutController;
 use App\Http\Controllers\Tienda\InicioController;
+use App\Http\Controllers\Tienda\ResenaController as ResenaTiendaController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -23,11 +27,9 @@ Route::get('/producto/{slug}', [CatalogoController::class, 'producto'])->name('t
 Route::get('/arma-tu-pc', [ConfiguracionController::class, 'configurador'])->name('tienda.configurador');
 Route::get('/arma-tu-pc/c/{configuracion}', [ConfiguracionController::class, 'ver'])->name('tienda.configurador.ver');
 
-Route::view('/carrito', 'tienda.proximamente', [
-    'titulo' => 'Tu carrito está vacío',
-    'icono' => 'carrito',
-    'mensaje' => 'Cuando el catálogo esté publicado podrás agregar productos y configuraciones a tu carrito.',
-])->name('carrito');
+Route::view('/carrito', 'tienda.carrito')->name('carrito');
+
+Route::post('/webhooks/paypal', [PaypalController::class, 'webhook'])->name('webhooks.paypal');
 
 /*
 |--------------------------------------------------------------------------
@@ -42,6 +44,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->except('show')
         ->parameters(['direcciones' => 'direccion'])
         ->names('direcciones');
+
+    Route::get('/checkout', [CheckoutController::class, 'create'])->name('checkout');
+    Route::post('/checkout', [CheckoutController::class, 'store'])->middleware('throttle:10,1')->name('checkout.store');
+
+    Route::get('/mi-cuenta/pedidos', [PedidoController::class, 'index'])->name('pedidos.index');
+    Route::get('/mi-cuenta/pedidos/{pedido}', [PedidoController::class, 'show'])->name('pedidos.show');
+    Route::post('/mi-cuenta/pedidos/{pedido}/cancelar', [PedidoController::class, 'cancelar'])->name('pedidos.cancelar');
+    Route::post('/mi-cuenta/pedidos/{pedido}/transferencia', [PedidoController::class, 'transferencia'])->middleware('throttle:10,1')->name('pedidos.transferencia');
+    Route::post('/mi-cuenta/pedidos/{pedido}/paypal/orden', [PaypalController::class, 'crearOrden'])->middleware('throttle:20,1')->name('pedidos.paypal.orden');
+    Route::post('/mi-cuenta/pedidos/{pedido}/paypal/capturar', [PaypalController::class, 'capturar'])->middleware('throttle:20,1')->name('pedidos.paypal.capturar');
+    Route::get('/pagos/{pago}/comprobante', [PedidoController::class, 'comprobante'])->name('pagos.comprobante');
+
+    Route::post('/producto/{slug}/resenas', [ResenaTiendaController::class, 'store'])->middleware('throttle:10,1')->name('tienda.resenas.store');
 
     Route::get('/mi-cuenta/configuraciones', [ConfiguracionController::class, 'index'])->name('configuraciones.index');
     Route::delete('/mi-cuenta/configuraciones/{configuracion}', [ConfiguracionController::class, 'destroy'])->name('configuraciones.destroy');
@@ -64,6 +79,36 @@ Route::middleware(['auth', 'verified', 'rol'])->prefix('admin')->name('admin.')-
 
     Route::post('vista-previa', [Admin\VistaPreviaController::class, 'store'])->name('vista-previa.store');
     Route::delete('vista-previa', [Admin\VistaPreviaController::class, 'destroy'])->name('vista-previa.destroy');
+
+    // Pedidos y pagos: consulta (contabilidad incluida) y gestión (ventas)
+    Route::middleware('rol:ADMIN,VENDEDOR,CONTADOR')->group(function () {
+        Route::get('pedidos', [Admin\PedidoController::class, 'index'])->name('pedidos.index');
+        Route::get('pedidos/{pedido}', [Admin\PedidoController::class, 'show'])->name('pedidos.show');
+        Route::get('pagos', [Admin\PagoController::class, 'index'])->name('pagos.index');
+    });
+
+    Route::middleware('rol:ADMIN,VENDEDOR')->group(function () {
+        Route::post('pedidos/{pedido}/estado', [Admin\PedidoController::class, 'cambiarEstado'])->name('pedidos.estado');
+        Route::post('pedidos/{pedido}/envio', [Admin\PedidoController::class, 'envio'])->name('pedidos.envio');
+        Route::post('pedidos/{pedido}/cancelar', [Admin\PedidoController::class, 'cancelar'])->name('pedidos.cancelar');
+        Route::post('pedidos/{pedido}/pagos/{pago}/reembolso', [Admin\PedidoController::class, 'reembolsar'])->name('pedidos.reembolsar');
+        Route::post('pagos/{pago}/aprobar', [Admin\PagoController::class, 'aprobar'])->name('pagos.aprobar');
+        Route::post('pagos/{pago}/rechazar', [Admin\PagoController::class, 'rechazar'])->name('pagos.rechazar');
+    });
+
+    // Taller de armado
+    Route::middleware('rol:ADMIN,TECNICO,VENDEDOR')->group(function () {
+        Route::get('taller', [Admin\TallerController::class, 'index'])->name('taller.index');
+        Route::get('taller/{orden}', [Admin\TallerController::class, 'show'])->name('taller.show');
+    });
+
+    Route::middleware('rol:ADMIN,TECNICO')->group(function () {
+        Route::post('taller/{orden}/tomar', [Admin\TallerController::class, 'tomar'])->name('taller.tomar');
+        Route::post('taller/{orden}/checklist', [Admin\TallerController::class, 'checklist'])->name('taller.checklist');
+        Route::post('taller/{orden}/pruebas', [Admin\TallerController::class, 'pruebas'])->name('taller.pruebas');
+        Route::post('taller/{orden}/completar', [Admin\TallerController::class, 'completar'])->name('taller.completar');
+        Route::post('taller/{orden}/incidencia', [Admin\TallerController::class, 'incidencia'])->name('taller.incidencia');
+    });
 
     // Consulta de inventario y compras (contabilidad incluida)
     Route::middleware('rol:ADMIN,VENDEDOR,CONTADOR')->group(function () {

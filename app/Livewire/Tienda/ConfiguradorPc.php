@@ -6,9 +6,11 @@ use App\Enums\TipoComponente;
 use App\Models\Configuracion;
 use App\Models\ParametroSistema;
 use App\Models\Producto;
+use App\Services\CarritoService;
 use App\Services\CompatibilidadService;
 use App\Support\Configurador\Configurador;
 use App\Support\Configurador\Seleccion;
+use DomainException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
@@ -161,6 +163,23 @@ class ConfiguradorPc extends Component
         $this->mensaje = 'Configuración guardada. Puedes compartirla con el enlace del resumen.';
 
         return null;
+    }
+
+    public function agregarAlCarrito(CarritoService $carrito): mixed
+    {
+        try {
+            $carrito->agregarConfiguracion(Seleccion::desde($this->seleccion), $this->nombre, $this->incluyeArmado);
+        } catch (DomainException $e) {
+            $this->mensaje = $e->getMessage();
+
+            return null;
+        }
+
+        $this->reset('seleccion', 'codigoGuardado');
+        $this->nombre = 'Mi PC ForjaPC';
+        $this->paso = 'cpu';
+
+        return $this->redirectRoute('carrito');
     }
 
     public function render(CompatibilidadService $compatibilidad): View

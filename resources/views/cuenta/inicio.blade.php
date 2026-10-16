@@ -11,7 +11,7 @@
             <div class="grid gap-4 sm:grid-cols-3">
                 <div class="rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
                     <p class="text-sm text-slate-500">Pedidos en curso</p>
-                    <p class="mt-1 text-3xl font-extrabold text-slate-900">0</p>
+                    <p class="mt-1 text-3xl font-extrabold text-slate-900">{{ $user->pedidos()->whereNotIn('estado', ['ENTREGADO', 'CANCELADO', 'REEMBOLSADO'])->count() }}</p>
                 </div>
                 <div class="rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
                     <p class="text-sm text-slate-500">Configuraciones guardadas</p>
