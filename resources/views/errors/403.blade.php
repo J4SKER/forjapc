@@ -1,0 +1,1 @@
+@include('errors.plantilla', ['codigo' => '403', 'titulo' => 'Acceso denegado', 'mensaje' => in_array($exception->getMessage(), ['', 'This action is unauthorized.', 'Forbidden'], true) ? 'No tienes permiso para ver esta página.' : $exception->getMessage()])

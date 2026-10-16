@@ -1,0 +1,1 @@
+@include('errors.plantilla', ['codigo' => '🛠', 'titulo' => 'Tienda en mantenimiento', 'mensaje' => 'Estamos actualizando ForjaPC para servirte mejor. Vuelve en unos minutos; tus pedidos y tu cuenta están a salvo.'])

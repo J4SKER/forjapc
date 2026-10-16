@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Middleware\AsegurarRol;
+use App\Http\Middleware\CabecerasSeguridad;
 use App\Http\Middleware\ExigirCambioPassword;
+use App\Http\Middleware\ModoMantenimiento;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -20,8 +22,11 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->validateCsrfTokens(except: ['webhooks/*']);
 
+        $middleware->append(CabecerasSeguridad::class);
+
         $middleware->web(append: [
             ExigirCambioPassword::class,
+            ModoMantenimiento::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
