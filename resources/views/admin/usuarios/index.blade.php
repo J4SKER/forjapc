@@ -23,9 +23,14 @@
                 <x-secondary-button type="submit">Filtrar</x-secondary-button>
             </div>
         </form>
-        <a href="{{ route('admin.usuarios.create') }}" class="inline-flex items-center justify-center gap-2 rounded-lg bg-acento-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-acento-700">
-            <x-icono nombre="usuario" class="size-4" /> Nuevo usuario interno
-        </a>
+        <div class="flex gap-2">
+            <a href="{{ route('admin.usuarios.exportar', request()->only(['q', 'rol', 'estado'])) }}" class="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                <x-icono nombre="lista" class="size-4" /> Exportar CSV
+            </a>
+            <a href="{{ route('admin.usuarios.create') }}" class="inline-flex items-center justify-center gap-2 rounded-lg bg-acento-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-acento-700">
+                <x-icono nombre="usuario" class="size-4" /> Nuevo usuario interno
+            </a>
+        </div>
     </div>
 
     <div class="overflow-x-auto rounded-xl bg-white shadow-sm ring-1 ring-slate-200">

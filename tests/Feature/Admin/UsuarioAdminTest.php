@@ -4,6 +4,7 @@ namespace Tests\Feature\Admin;
 
 use App\Enums\Rol;
 use App\Models\BitacoraAuditoria;
+use App\Models\Direccion;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -99,5 +100,38 @@ class UsuarioAdminTest extends TestCase
         $this->expectException(\LogicException::class);
 
         $registro->update(['accion' => 'alterada']);
+    }
+
+    public function test_exporta_usuarios_filtrados_a_csv(): void
+    {
+        User::factory()->create(['nombre' => 'Ana Cliente', 'email' => 'ana@example.com']);
+        User::factory()->conRol(Rol::Tecnico)->create(['nombre' => 'Toño Técnico', 'email' => 'tono@example.com']);
+
+        $respuesta = $this->actingAs($this->admin)->get('/admin/usuarios/exportar?rol=TECNICO');
+
+        $respuesta->assertOk()->assertDownload();
+        $csv = $respuesta->streamedContent();
+        $this->assertStringContainsString('Toño Técnico', $csv);
+        $this->assertStringNotContainsString('ana@example.com', $csv);
+        $this->assertDatabaseHas(BitacoraAuditoria::class, ['accion' => 'usuarios_exportados']);
+    }
+
+    public function test_la_ficha_muestra_direcciones_y_actividad_del_usuario(): void
+    {
+        $cliente = User::factory()->create();
+        Direccion::factory()->for($cliente, 'usuario')->create(['alias' => 'Casa de playa']);
+        BitacoraAuditoria::create(['accion' => 'cuenta_bloqueada', 'entidad_tipo' => 'User', 'entidad_id' => $cliente->id]);
+
+        $this->actingAs($this->admin)->get("/admin/usuarios/{$cliente->id}/edit")
+            ->assertOk()
+            ->assertSee('Casa de playa')
+            ->assertSee('Cuenta bloqueada');
+    }
+
+    public function test_solo_el_admin_exporta_usuarios(): void
+    {
+        $this->actingAs(User::factory()->conRol(Rol::Vendedor)->create())
+            ->get('/admin/usuarios/exportar')
+            ->assertForbidden();
     }
 }

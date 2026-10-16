@@ -7,6 +7,13 @@
         @include('cuenta.partials.menu')
 
         <div class="space-y-6">
+            @if (Auth::user()->debe_cambiar_password)
+                <div class="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+                    <x-icono nombre="candado" class="size-5 shrink-0" />
+                    <p>Tu cuenta tiene una <strong>contraseña temporal</strong>. Escríbela en "Contraseña actual" y elige una nueva para poder usar el sistema.</p>
+                </div>
+            @endif
+
             <div class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
                 <div class="max-w-xl">
                     @include('profile.partials.update-profile-information-form')

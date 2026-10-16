@@ -60,6 +60,7 @@ Route::middleware(['auth', 'verified', 'rol'])->prefix('admin')->name('admin.')-
     Route::get('/', Admin\InicioController::class)->name('inicio');
 
     Route::middleware('rol:ADMIN')->group(function () {
+        Route::get('usuarios/exportar', [Admin\UsuarioController::class, 'exportar'])->name('usuarios.exportar');
         Route::resource('usuarios', Admin\UsuarioController::class)->except(['show', 'destroy']);
         Route::post('usuarios/{usuario}/desbloquear', [Admin\UsuarioController::class, 'desbloquear'])->name('usuarios.desbloquear');
 

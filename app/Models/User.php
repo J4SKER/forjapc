@@ -33,6 +33,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'nit' => 'CF',
         'activo' => true,
         'intentos_fallidos' => 0,
+        'debe_cambiar_password' => false,
     ];
 
     /**
@@ -47,6 +48,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
             'rol' => Rol::class,
             'activo' => 'boolean',
+            'debe_cambiar_password' => 'boolean',
             'bloqueado_hasta' => 'datetime',
             'ultimo_acceso' => 'datetime',
         ];

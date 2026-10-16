@@ -32,11 +32,11 @@ class CrearAdmin extends Command
         $password = Str::password(16, symbols: false);
 
         $admin = new User(['nombre' => $this->option('nombre'), 'email' => $email, 'password' => $password]);
-        $admin->forceFill(['rol' => Rol::Admin, 'email_verified_at' => now()])->save();
+        $admin->forceFill(['rol' => Rol::Admin, 'email_verified_at' => now(), 'debe_cambiar_password' => true])->save();
 
         $this->info("Administrador creado: {$email}");
         $this->line("Contraseña temporal: {$password}");
-        $this->warn('Cámbiala desde "Perfil y seguridad" al iniciar sesión.');
+        $this->warn('El sistema pedirá cambiarla en el primer ingreso.');
 
         return self::SUCCESS;
     }
