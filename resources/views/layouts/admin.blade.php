@@ -45,7 +45,7 @@
 
             <nav class="flex-1 space-y-0.5 overflow-y-auto px-3 py-2" aria-label="Panel administrativo">
                 @foreach ($secciones as [$nombre, $icono, $url, $patron, $roles, $pronto])
-                    @continue(! $usuario->tieneRol(...$roles))
+                    @continue(! $usuario->tieneRolEfectivo(...$roles))
                     @if ($pronto)
                         <span class="flex cursor-not-allowed items-center gap-3 rounded-lg px-3 py-2 text-sm text-marca-100/40" title="Disponible en un próximo sprint">
                             <x-icono :nombre="$icono" /> {{ $nombre }}
@@ -75,12 +75,26 @@
                 </button>
                 <h1 class="truncate text-lg font-bold text-slate-900">{{ $title ?? 'Panel' }}</h1>
 
-                <div x-data="{ abierto: false }" class="relative ml-auto" @click.outside="abierto = false">
+                @if ($usuario->rol === Rol::Admin)
+                    <form method="POST" action="{{ route('admin.vista-previa.store') }}" class="ml-auto hidden items-center gap-2 sm:flex" x-data>
+                        @csrf
+                        <label for="ver-como" class="text-xs font-medium text-slate-500">Ver como</label>
+                        <select id="ver-como" name="rol" @change="$el.form.submit()"
+                                class="rounded-lg border-slate-300 py-1.5 pr-8 text-sm shadow-sm focus:border-marca-500 focus:ring-marca-500">
+                            <option value="" @selected(! $usuario->estaEnVistaPrevia()) disabled>Administrador</option>
+                            @foreach ([Rol::Vendedor, Rol::Tecnico, Rol::Contador] as $rolPrevia)
+                                <option value="{{ $rolPrevia->value }}" @selected($usuario->rolEfectivo() === $rolPrevia)>{{ $rolPrevia->etiqueta() }}</option>
+                            @endforeach
+                        </select>
+                    </form>
+                @endif
+
+                <div x-data="{ abierto: false }" @class(['relative', 'ml-auto' => $usuario->rol !== Rol::Admin]) @click.outside="abierto = false">
                     <button type="button" @click="abierto = ! abierto" class="flex items-center gap-2 rounded-lg px-2 py-1 text-sm hover:bg-slate-100">
                         <span class="flex size-8 items-center justify-center rounded-full bg-marca-600 font-semibold text-white">{{ Str::upper(Str::substr($usuario->nombre, 0, 1)) }}</span>
                         <span class="hidden text-left leading-tight sm:block">
                             <span class="block font-semibold">{{ $usuario->nombre }}</span>
-                            <span class="block text-xs text-slate-500">{{ $usuario->rol->etiqueta() }}</span>
+                            <span class="block text-xs text-slate-500">{{ $usuario->rolEfectivo()->etiqueta() }}{{ $usuario->estaEnVistaPrevia() ? ' (vista previa)' : '' }}</span>
                         </span>
                         <x-icono nombre="chevron-abajo" class="size-4 text-slate-400" />
                     </button>
@@ -95,6 +109,20 @@
             </header>
 
             <main class="flex-1 p-4 sm:p-6">
+                @if ($usuario->estaEnVistaPrevia())
+                    <div class="mb-4 flex flex-col gap-3 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between">
+                        <p class="flex items-center gap-2">
+                            <x-icono nombre="usuario" class="size-5 shrink-0" />
+                            <span>Estás viendo el panel como <strong>{{ $usuario->rolEfectivo()->etiqueta() }}</strong>. Es una vista previa de solo lectura.</span>
+                        </p>
+                        <form method="POST" action="{{ route('admin.vista-previa.destroy') }}">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="rounded-lg bg-amber-600 px-3 py-1.5 font-semibold text-white hover:bg-amber-700">Salir de la vista previa</button>
+                        </form>
+                    </div>
+                @endif
+
                 @if (session('estado'))
                     <div class="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{{ session('estado') }}</div>
                 @endif

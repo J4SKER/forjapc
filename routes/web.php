@@ -59,6 +59,9 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'verified', 'rol'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', Admin\InicioController::class)->name('inicio');
 
+    Route::post('vista-previa', [Admin\VistaPreviaController::class, 'store'])->name('vista-previa.store');
+    Route::delete('vista-previa', [Admin\VistaPreviaController::class, 'destroy'])->name('vista-previa.destroy');
+
     Route::middleware('rol:ADMIN')->group(function () {
         Route::get('usuarios/exportar', [Admin\UsuarioController::class, 'exportar'])->name('usuarios.exportar');
         Route::resource('usuarios', Admin\UsuarioController::class)->except(['show', 'destroy']);

@@ -23,6 +23,11 @@ class User extends Authenticatable implements MustVerifyEmail
     use HasFactory, Notifiable, SoftDeletes;
 
     /**
+     * Clave de sesión donde se guarda el rol que el administrador está previsualizando.
+     */
+    public const SESION_VISTA_PREVIA = 'vista_previa_rol';
+
+    /**
      * Valores por defecto, iguales a los de la base de datos, para que el modelo
      * recién creado los tenga sin volver a consultarlo.
      *
@@ -75,5 +80,30 @@ class User extends Authenticatable implements MustVerifyEmail
     public function estaBloqueadoTemporalmente(): bool
     {
         return $this->bloqueado_hasta !== null && $this->bloqueado_hasta->isFuture();
+    }
+
+    /**
+     * Rol con el que se muestra el panel: el administrador puede previsualizarlo
+     * como otro rol del personal ("Ver como"); los demás usuarios usan el suyo.
+     */
+    public function rolEfectivo(): Rol
+    {
+        if ($this->rol !== Rol::Admin) {
+            return $this->rol;
+        }
+
+        $rolPrevisualizado = Rol::tryFrom((string) session(self::SESION_VISTA_PREVIA));
+
+        return $rolPrevisualizado?->esPersonal() ? $rolPrevisualizado : $this->rol;
+    }
+
+    public function estaEnVistaPrevia(): bool
+    {
+        return $this->rolEfectivo() !== $this->rol;
+    }
+
+    public function tieneRolEfectivo(Rol ...$roles): bool
+    {
+        return in_array($this->rolEfectivo(), $roles, true);
     }
 }
