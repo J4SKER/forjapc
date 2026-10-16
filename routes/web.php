@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin;
+use App\Http\Controllers\ConfiguracionController;
 use App\Http\Controllers\CuentaController;
 use App\Http\Controllers\DireccionController;
 use App\Http\Controllers\ProfileController;
@@ -19,11 +20,8 @@ Route::get('/categoria/{slug}', [CatalogoController::class, 'categoria'])->name(
 Route::get('/buscar', [CatalogoController::class, 'buscar'])->name('tienda.buscar');
 Route::get('/producto/{slug}', [CatalogoController::class, 'producto'])->name('tienda.producto');
 
-Route::view('/arma-tu-pc', 'tienda.proximamente', [
-    'titulo' => 'Arma tu PC',
-    'icono' => 'herramienta',
-    'mensaje' => 'El configurador de PC a la medida estará disponible muy pronto.',
-])->name('tienda.configurador');
+Route::get('/arma-tu-pc', [ConfiguracionController::class, 'configurador'])->name('tienda.configurador');
+Route::get('/arma-tu-pc/c/{configuracion}', [ConfiguracionController::class, 'ver'])->name('tienda.configurador.ver');
 
 Route::view('/carrito', 'tienda.proximamente', [
     'titulo' => 'Tu carrito está vacío',
@@ -44,6 +42,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->except('show')
         ->parameters(['direcciones' => 'direccion'])
         ->names('direcciones');
+
+    Route::get('/mi-cuenta/configuraciones', [ConfiguracionController::class, 'index'])->name('configuraciones.index');
+    Route::delete('/mi-cuenta/configuraciones/{configuracion}', [ConfiguracionController::class, 'destroy'])->name('configuraciones.destroy');
 });
 
 Route::middleware('auth')->group(function () {

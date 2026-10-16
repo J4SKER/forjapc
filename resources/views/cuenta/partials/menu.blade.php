@@ -1,6 +1,7 @@
 @php
     $opciones = [
         ['Resumen', 'usuario', 'dashboard', 'dashboard'],
+        ['Mis configuraciones', 'herramienta', 'configuraciones.index', 'configuraciones.*'],
         ['Mis direcciones', 'ubicacion', 'direcciones.index', 'direcciones.*'],
         ['Perfil y seguridad', 'ajustes', 'profile.edit', 'profile.*'],
     ];

@@ -67,6 +67,14 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Direccion::class, 'usuario_id');
     }
 
+    /**
+     * @return HasMany<Configuracion, $this>
+     */
+    public function configuraciones(): HasMany
+    {
+        return $this->hasMany(Configuracion::class, 'usuario_id');
+    }
+
     public function tieneRol(Rol ...$roles): bool
     {
         return in_array($this->rol, $roles, true);
