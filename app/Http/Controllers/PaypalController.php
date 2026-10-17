@@ -61,7 +61,7 @@ class PaypalController extends Controller
         $evento = $request->json()->all();
         $cabeceras = collect($request->headers->all())->map(fn ($valores) => $valores[0] ?? null)->all();
 
-        if (! $paypal->configurado() || ! $paypal->verificarWebhook($cabeceras, $evento)) {
+        if (! $paypal->configurado() || ! $paypal->verificarWebhook($cabeceras, $request->getContent())) {
             return response('Firma no válida', 400);
         }
 

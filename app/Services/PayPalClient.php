@@ -7,6 +7,7 @@ use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use RuntimeException;
 
 /**
@@ -102,27 +103,38 @@ class PayPalClient
     /**
      * Verifica con PayPal que una notificación de webhook es auténtica.
      *
-     * @param  array<string, mixed>  $evento
+     * El evento se reenvía con el texto exacto que mandó PayPal: si se decodifica y se vuelve a
+     * codificar (tildes, barras, decimales), la firma deja de coincidir.
+     *
+     * @param  array<string, ?string>  $cabeceras
      */
-    public function verificarWebhook(array $cabeceras, array $evento): bool
+    public function verificarWebhook(array $cabeceras, string $cuerpo): bool
     {
         $webhookId = config('services.paypal.webhook_id');
 
-        if (blank($webhookId)) {
+        if (blank($webhookId) || ! json_validate($cuerpo)) {
             return false;
         }
 
-        $respuesta = $this->http()->post('/v1/notifications/verify-webhook-signature', [
+        $datos = json_encode([
             'auth_algo' => $cabeceras['paypal-auth-algo'] ?? null,
             'cert_url' => $cabeceras['paypal-cert-url'] ?? null,
             'transmission_id' => $cabeceras['paypal-transmission-id'] ?? null,
             'transmission_sig' => $cabeceras['paypal-transmission-sig'] ?? null,
             'transmission_time' => $cabeceras['paypal-transmission-time'] ?? null,
             'webhook_id' => $webhookId,
-            'webhook_event' => $evento,
         ]);
 
-        return $respuesta->successful() && $respuesta->json('verification_status') === 'SUCCESS';
+        $respuesta = $this->http()->withBody(substr($datos, 0, -1).',"webhook_event":'.$cuerpo.'}', 'application/json')
+            ->post('/v1/notifications/verify-webhook-signature');
+
+        if ($respuesta->json('verification_status') !== 'SUCCESS') {
+            Log::warning('Webhook de PayPal con firma no válida', ['estado' => $respuesta->status(), 'respuesta' => $respuesta->json(), 'transmision' => $cabeceras['paypal-transmission-id'] ?? null]);
+
+            return false;
+        }
+
+        return $respuesta->successful();
     }
 
     private function http(): PendingRequest

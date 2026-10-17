@@ -225,6 +225,23 @@ class PagosTest extends TestCase
         $this->assertSame(EstadoPago::Aprobado, $pago->refresh()->estado);
     }
 
+    public function test_la_firma_del_webhook_se_verifica_con_el_texto_exacto_que_mando_paypal(): void
+    {
+        config(['services.paypal.client_id' => 'cliente', 'services.paypal.secret' => 'secreto', 'services.paypal.webhook_id' => 'WH']);
+        Http::fake([
+            '*/v1/oauth2/token' => Http::response(['access_token' => 'token']),
+            '*/verify-webhook-signature' => Http::response(['verification_status' => 'SUCCESS']),
+        ]);
+
+        // Tildes sin escapar, barras y decimales con cero final: así lo manda PayPal y así debe reenviarse.
+        $crudo = '{"id":"WH-EVT-9","event_type":"PAYMENT.CAPTURE.REFUNDED","resource":{"note_to_payer":"Devolución por garantía","amount":{"value":"10.50"},"links":[{"href":"https://api.sandbox.paypal.com/v2/payments/refunds/R"}]}}';
+
+        $this->call('POST', '/webhooks/paypal', [], [], [], ['CONTENT_TYPE' => 'application/json'], $crudo)->assertOk();
+
+        Http::assertSent(fn ($request) => str_ends_with($request->url(), '/verify-webhook-signature')
+            && str_ends_with($request->body(), '"webhook_id":"WH","webhook_event":'.$crudo.'}'));
+    }
+
     public function test_un_webhook_con_firma_invalida_se_rechaza(): void
     {
         config(['services.paypal.client_id' => 'cliente', 'services.paypal.secret' => 'secreto', 'services.paypal.webhook_id' => 'WH']);
