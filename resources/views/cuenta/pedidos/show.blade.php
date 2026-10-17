@@ -74,7 +74,18 @@
 
                                             paypal.Buttons({
                                                 createOrder: () => enviar(urlOrden).then(d => d.id).catch(e => { this.error = e.message; throw e; }),
-                                                onApprove: (datos) => { this.procesando = true; return enviar(urlCaptura, { orderID: datos.orderID }).then(d => window.location = d.redireccion).catch(e => { this.procesando = false; this.error = e.message; }); },
+                                                onApprove: (datos) => {
+                                                    this.procesando = true;
+                                                    const capturar = () => enviar(urlCaptura, { orderID: datos.orderID });
+                                                    // Si la conexión falla, se reintenta y luego se recarga: al abrir el pedido el servidor consulta PayPal y aplica el pago.
+                                                    return capturar()
+                                                        .catch(e => e instanceof TypeError ? new Promise(r => setTimeout(r, 2000)).then(capturar) : Promise.reject(e))
+                                                        .then(d => window.location = d.redireccion)
+                                                        .catch(e => {
+                                                            if (e instanceof TypeError) { this.error = 'Se interrumpió la conexión. Estamos confirmando tu pago con PayPal…'; setTimeout(() => window.location.reload(), 4000); return; }
+                                                            this.procesando = false; this.error = e.message;
+                                                        });
+                                                },
                                                 onError: () => { this.error = 'PayPal no pudo procesar el pago. Intenta de nuevo.'; },
                                             }).render('#paypal-botones');
                                         },

@@ -18,6 +18,7 @@ use DomainException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 /**
@@ -86,6 +87,32 @@ class PagoService
         ])->save();
 
         return $this->aprobar($pago);
+    }
+
+    /**
+     * Respaldo por si el navegador no llegó a avisar la aprobación (red caída, ventana cerrada):
+     * consulta en PayPal las órdenes pendientes del pedido y captura la que el comprador aprobó.
+     */
+    public function sincronizarPaypal(Pedido $pedido): void
+    {
+        if (! $this->paypal->configurado() || ! $pedido->estaPendienteDePago()) {
+            return;
+        }
+
+        $pendientes = $pedido->pagos()->where('metodo', MetodoPago::Paypal)->where('estado', EstadoPago::Pendiente)
+            ->whereNotNull('referencia_externa')->latest('id')->get();
+
+        foreach ($pendientes as $pago) {
+            try {
+                if (in_array($this->paypal->estadoOrden($pago->referencia_externa), ['APPROVED', 'COMPLETED'], true)) {
+                    $this->capturarPaypal($pedido->refresh(), $pago->referencia_externa);
+
+                    return;
+                }
+            } catch (Throwable $e) {
+                Log::warning("No se pudo sincronizar la orden de PayPal {$pago->referencia_externa}: {$e->getMessage()}");
+            }
+        }
     }
 
     public function registrarTransferencia(Pedido $pedido, string $banco, string $boleta, float $monto, UploadedFile $comprobante): Pago
@@ -248,6 +275,15 @@ class PagoService
                 if ($pago && $pago->estado === EstadoPago::Pendiente && $pago->pedido->estaPendienteDePago()) {
                     $pago->forceFill(['datos' => ['captura_id' => data_get($evento, 'resource.id'), 'webhook' => true]])->save();
                     $this->aprobar($pago);
+                }
+            }
+
+            // El comprador aprobó pero el navegador no pidió la captura: se captura desde aquí.
+            if (($evento['event_type'] ?? null) === 'CHECKOUT.ORDER.APPROVED') {
+                $pago = Pago::query()->where('metodo', MetodoPago::Paypal)->where('referencia_externa', data_get($evento, 'resource.id'))->first();
+
+                if ($pago && $pago->estado === EstadoPago::Pendiente && $pago->pedido->estaPendienteDePago()) {
+                    $this->capturarPaypal($pago->pedido, $pago->referencia_externa);
                 }
             }
 

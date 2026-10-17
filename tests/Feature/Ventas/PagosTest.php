@@ -177,6 +177,49 @@ class PagosTest extends TestCase
         $this->assertSame(1, $this->producto('logitech-g502-hero')->movimientos()->where('tipo', 'SALIDA_VENTA')->count());
     }
 
+    public function test_si_el_navegador_no_avisa_la_aprobacion_el_pedido_se_sincroniza_al_abrirlo(): void
+    {
+        config(['services.paypal.client_id' => 'cliente', 'services.paypal.secret' => 'secreto']);
+        $pedido = $this->pedidoCon(['logitech-g502-hero' => 1], ['metodo_pago' => 'PAYPAL']);
+        $usd = round(395 / 7.75, 2);
+
+        Http::fake([
+            '*/v1/oauth2/token' => Http::response(['access_token' => 'token']),
+            '*/v2/checkout/orders' => Http::response(['id' => 'ORDEN-4']),
+            '*/v2/checkout/orders/ORDEN-4' => Http::response(['id' => 'ORDEN-4', 'status' => 'APPROVED']),
+            '*/v2/checkout/orders/ORDEN-4/capture' => Http::response(['status' => 'COMPLETED', 'purchase_units' => [['payments' => ['captures' => [[
+                'id' => 'CAPTURA-4', 'status' => 'COMPLETED', 'amount' => ['currency_code' => 'USD', 'value' => number_format($usd, 2, '.', '')],
+            ]]]]]]),
+        ]);
+
+        $this->actingAs($this->cliente)->postJson("/mi-cuenta/pedidos/{$pedido->numero}/paypal/orden")->assertOk();
+        // La llamada de captura del navegador nunca llega; el cliente vuelve a abrir su pedido.
+        $this->actingAs($this->cliente)->get("/mi-cuenta/pedidos/{$pedido->numero}")->assertOk();
+
+        $this->assertSame(EstadoPago::Aprobado, $pedido->pagos()->sole()->estado);
+        $this->assertSame(EstadoPedido::EnPreparacion, $pedido->refresh()->estado);
+    }
+
+    public function test_el_webhook_de_orden_aprobada_captura_el_pago(): void
+    {
+        config(['services.paypal.client_id' => 'cliente', 'services.paypal.secret' => 'secreto', 'services.paypal.webhook_id' => 'WH']);
+        $pedido = $this->pedidoCon(['logitech-g502-hero' => 1], ['metodo_pago' => 'PAYPAL']);
+        $pago = new Pago;
+        $pago->forceFill(['pedido_id' => $pedido->id, 'metodo' => 'PAYPAL', 'estado' => 'PENDIENTE', 'monto' => $pedido->total, 'monto_usd' => 50.97, 'tipo_cambio' => 7.75, 'referencia_externa' => 'ORDEN-5'])->save();
+
+        Http::fake([
+            '*/v1/oauth2/token' => Http::response(['access_token' => 'token']),
+            '*/verify-webhook-signature' => Http::response(['verification_status' => 'SUCCESS']),
+            '*/v2/checkout/orders/ORDEN-5/capture' => Http::response(['status' => 'COMPLETED', 'purchase_units' => [['payments' => ['captures' => [[
+                'id' => 'CAPTURA-5', 'status' => 'COMPLETED', 'amount' => ['currency_code' => 'USD', 'value' => '50.97'],
+            ]]]]]]),
+        ]);
+
+        $this->postJson('/webhooks/paypal', ['id' => 'WH-EVT-5', 'event_type' => 'CHECKOUT.ORDER.APPROVED', 'resource' => ['id' => 'ORDEN-5']])->assertOk();
+
+        $this->assertSame(EstadoPago::Aprobado, $pago->refresh()->estado);
+    }
+
     public function test_un_webhook_con_firma_invalida_se_rechaza(): void
     {
         config(['services.paypal.client_id' => 'cliente', 'services.paypal.secret' => 'secreto', 'services.paypal.webhook_id' => 'WH']);

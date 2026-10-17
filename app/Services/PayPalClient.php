@@ -77,6 +77,14 @@ class PayPalClient
     }
 
     /**
+     * Estado actual de una orden (CREATED, APPROVED, COMPLETED, …).
+     */
+    public function estadoOrden(string $ordenId): string
+    {
+        return (string) $this->http()->get("/v2/checkout/orders/{$ordenId}")->throw()->json('status');
+    }
+
+    /**
      * Reembolsa total o parcialmente una captura y devuelve el identificador del reembolso.
      */
     public function reembolsar(string $capturaId, float $montoUsd, string $nota): string

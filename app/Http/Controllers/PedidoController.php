@@ -28,9 +28,10 @@ class PedidoController extends Controller
         ]);
     }
 
-    public function show(Request $request, Pedido $pedido, PayPalClient $paypal): View
+    public function show(Request $request, Pedido $pedido, PayPalClient $paypal, PagoService $pagos): View
     {
         $this->asegurarDueno($request, $pedido);
+        $pagos->sincronizarPaypal($pedido);
 
         return view('cuenta.pedidos.show', [
             'pedido' => $pedido->load(['items.producto', 'historial', 'pagos', 'departamento', 'ordenesArmado']),
