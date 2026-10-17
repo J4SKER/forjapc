@@ -1,21 +1,20 @@
 <div>
     @if ($producto?->estaDisponible())
-        <div @class(['flex gap-2', 'mt-4' => $conCantidad, 'mt-3' => ! $conCantidad])>
+        <div @class(['flex gap-2', 'flex-col sm:flex-row' => $conCantidad, 'mt-3' => ! $conCantidad])>
             @if ($conCantidad)
-                <label class="sr-only" for="cantidad-{{ $productoId }}">Cantidad</label>
-                <select id="cantidad-{{ $productoId }}" wire:model="cantidad" class="rounded-lg border-slate-300 text-sm">
-                    @for ($i = 1; $i <= min(10, $producto->disponible()); $i++)
-                        <option value="{{ $i }}">{{ $i }}</option>
-                    @endfor
-                </select>
+                <div class="flex h-12 items-center justify-between rounded-lg bg-slate-200/70 p-1 shadow-inner sm:w-36" x-data="{ maximo: {{ min(10, $producto->disponible()) }} }" role="group" aria-label="Cantidad">
+                    <button type="button" @click="$wire.cantidad = Math.max(1, $wire.cantidad - 1)" class="flex size-10 items-center justify-center rounded bg-white text-lg font-bold text-slate-900 transition hover:bg-slate-100 active:scale-90" aria-label="Disminuir cantidad">−</button>
+                    <span x-text="$wire.cantidad" class="w-12 text-center font-bold text-slate-900" aria-live="polite">{{ $cantidad }}</span>
+                    <button type="button" @click="$wire.cantidad = Math.min(maximo, $wire.cantidad + 1)" class="flex size-10 items-center justify-center rounded bg-white text-lg font-bold text-slate-900 transition hover:bg-slate-100 active:scale-90" aria-label="Aumentar cantidad">+</button>
+                </div>
             @endif
             <button type="button" wire:click="agregar" wire:loading.attr="disabled"
                     @class([
                         'flex flex-1 items-center justify-center gap-2 rounded-lg font-semibold text-white transition active:scale-[0.98] disabled:opacity-60',
                         'bg-emerald-600 hover:bg-emerald-700' => $agregado,
-                        'bg-linear-to-r from-acento-500 to-acento-600 px-5 py-3 font-display shadow-lg shadow-orange-500/30 hover:to-acento-700' => $conCantidad && ! $agregado,
+                        'bg-linear-to-r from-acento-500 to-acento-600 font-display text-lg shadow-lg shadow-orange-500/30 hover:-translate-y-0.5 hover:to-acento-700' => $conCantidad && ! $agregado,
                         'bg-black hover:bg-marca-800' => ! $conCantidad && ! $agregado,
-                        'px-5 py-3' => $conCantidad && $agregado,
+                        'h-12 px-5' => $conCantidad,
                         'px-3 py-2 text-sm' => ! $conCantidad,
                     ])>
                 <x-icono nombre="carrito" class="size-5" />
