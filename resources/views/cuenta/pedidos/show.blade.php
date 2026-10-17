@@ -55,13 +55,13 @@
 
                     @if ($pedido->metodo_pago === MetodoPago::Paypal)
                         @if ($paypalClientId)
-                            <div class="mt-5 max-w-md" x-data="pagoPaypal('{{ route('pedidos.paypal.orden', $pedido) }}', '{{ route('pedidos.paypal.capturar', $pedido) }}')">
+                            <div class="relative isolate z-0 mt-5 max-w-md" x-data="pagoPaypal('{{ route('pedidos.paypal.orden', $pedido) }}', '{{ route('pedidos.paypal.capturar', $pedido) }}')">
                                 <div id="paypal-botones"></div>
                                 <p x-show="error" x-text="error" x-cloak class="mt-2 text-sm text-red-600"></p>
                                 <p x-show="procesando" x-cloak class="mt-2 text-sm text-slate-600">Confirmando el pago…</p>
                             </div>
                             <p class="mt-3 text-xs text-slate-500">Modo de pruebas (sandbox): usa una cuenta de comprador de PayPal Developer. No se cobra dinero real.</p>
-                            <script src="https://www.paypal.com/sdk/js?client-id={{ $paypalClientId }}&currency=USD&intent=capture&locale=es_MX"></script>
+                            <script src="https://www.paypal.com/sdk/js?client-id={{ $paypalClientId }}&currency=USD&intent=capture&locale=es_GT{{ config('services.paypal.modo') === 'live' ? '' : '&buyer-country=GT' }}"></script>
                             <script>
                                 function pagoPaypal(urlOrden, urlCaptura) {
                                     return {
