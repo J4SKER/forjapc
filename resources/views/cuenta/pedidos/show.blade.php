@@ -49,7 +49,7 @@
                     <p class="mt-1 text-sm text-slate-600">
                         Total: <strong>Q{{ number_format($pedido->total, 2) }}</strong>.
                         Las unidades están apartadas hasta el <strong>{{ $pedido->vence_at->translatedFormat('j \d\e F, H:i') }}</strong>
-                        <span x-data="{ s: {{ max(0, now()->diffInSeconds($pedido->vence_at, false)) }} }" x-init="setInterval(() => s = Math.max(0, s - 1), 1000)"
+                        <span x-data="{ s: {{ max(0, (int) now()->diffInSeconds($pedido->vence_at, false)) }} }" x-init="setInterval(() => s = Math.max(0, s - 1), 1000)"
                               x-text="'(' + (s > 3600 ? Math.floor(s / 3600) + ' h ' : '') + Math.floor((s % 3600) / 60) + ' min ' + (s % 60) + ' s)'"></span>.
                     </p>
 
@@ -61,7 +61,7 @@
                                 <p x-show="procesando" x-cloak class="mt-2 text-sm text-slate-600">Confirmando el pago…</p>
                             </div>
                             <p class="mt-3 text-xs text-slate-500">Modo de pruebas (sandbox): usa una cuenta de comprador de PayPal Developer. No se cobra dinero real.</p>
-                            <script src="https://www.paypal.com/sdk/js?client-id={{ $paypalClientId }}&currency=USD&intent=capture&locale=es_XC"></script>
+                            <script src="https://www.paypal.com/sdk/js?client-id={{ $paypalClientId }}&currency=USD&intent=capture&locale=es_MX"></script>
                             <script>
                                 function pagoPaypal(urlOrden, urlCaptura) {
                                     return {
