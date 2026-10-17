@@ -130,7 +130,7 @@
                                 <option value="{{ $destino->value }}">{{ $destino->etiqueta() }}</option>
                             @endforeach
                         </select>
-                        <x-text-input name="comentario" placeholder="Comentario (opcional)" class="block w-full" />
+                        <x-text-input name="comentario" placeholder="Comentario para el cliente (opcional, va en el correo)" class="block w-full" />
                         <x-primary-button class="w-full">Actualizar estado</x-primary-button>
                     </form>
                 @endif

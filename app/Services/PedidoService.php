@@ -31,7 +31,7 @@ class PedidoService
      */
     private const ESTADOS_NOTIFICADOS = [
         EstadoPedido::ListoEntrega, EstadoPedido::Enviado, EstadoPedido::Entregado,
-        EstadoPedido::Cancelado, EstadoPedido::Reembolsado,
+        EstadoPedido::Cancelado,
     ];
 
     public function __construct(
@@ -103,9 +103,9 @@ class PedidoService
     /**
      * Cambia el estado si la transición está permitida y guarda quién lo hizo.
      */
-    public function cambiarEstado(Pedido $pedido, EstadoPedido $destino, ?string $comentario = null, bool $notificar = true): Pedido
+    public function cambiarEstado(Pedido $pedido, EstadoPedido $destino, ?string $comentario = null, bool $notificar = true, bool $comentarioAlCliente = false): Pedido
     {
-        return DB::transaction(function () use ($pedido, $destino, $comentario, $notificar) {
+        return DB::transaction(function () use ($pedido, $destino, $comentario, $notificar, $comentarioAlCliente) {
             $fila = Pedido::query()->lockForUpdate()->findOrFail($pedido->id);
             $origen = $fila->estado;
 
@@ -125,7 +125,7 @@ class PedidoService
             $pedido->setRawAttributes($fila->getAttributes(), true);
 
             if ($notificar && in_array($destino, self::ESTADOS_NOTIFICADOS, true)) {
-                DB::afterCommit(fn () => $fila->usuario->notify(new PedidoActualizado($fila)));
+                DB::afterCommit(fn () => $fila->usuario->notify(new PedidoActualizado($fila, $comentarioAlCliente ? $comentario : null)));
             }
 
             return $pedido;

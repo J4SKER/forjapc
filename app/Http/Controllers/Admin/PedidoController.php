@@ -85,7 +85,7 @@ class PedidoController extends Controller
             return back()->with('estado', "No se puede pasar este pedido a «{$destino->etiqueta()}» desde aquí.");
         }
 
-        return $this->ejecutar(fn () => $this->pedidos->cambiarEstado($pedido, $destino, $datos['comentario'] ?? null), 'Estado actualizado.');
+        return $this->ejecutar(fn () => $this->pedidos->cambiarEstado($pedido, $destino, $datos['comentario'] ?? null, comentarioAlCliente: true), 'Estado actualizado.');
     }
 
     public function envio(Request $request, Pedido $pedido): RedirectResponse

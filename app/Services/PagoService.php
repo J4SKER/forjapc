@@ -14,6 +14,7 @@ use App\Models\Pedido;
 use App\Models\Reembolso;
 use App\Models\User;
 use App\Notifications\PagoRechazado;
+use App\Notifications\ReembolsoProcesado;
 use DomainException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\UploadedFile;
@@ -246,12 +247,13 @@ class PagoService
             }
 
             if ($esTotal) {
-                $this->pedidos->cambiarEstado($pedido, EstadoPedido::Reembolsado, "Reembolso total: {$motivo}");
+                $this->pedidos->cambiarEstado($pedido, EstadoPedido::Reembolsado, "Reembolso total: {$motivo}", notificar: false);
                 $this->taller->retirarOrdenesPendientes($pedido);
             }
 
             $this->bitacora->registrar('reembolso_registrado', $reembolso, null, ['pedido' => $pedido->numero, 'monto' => $monto, 'total' => $esTotal]);
             ReembolsoRegistrado::dispatch($reembolso);
+            DB::afterCommit(fn () => $pedido->usuario->notify(new ReembolsoProcesado($reembolso, $esTotal)));
 
             return $reembolso;
         });
