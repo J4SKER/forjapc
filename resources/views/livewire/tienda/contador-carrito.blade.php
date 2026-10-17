@@ -1,10 +1,10 @@
-<a href="{{ route('carrito') }}" class="relative flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-marca-700" aria-label="Carrito de compras, {{ $articulos }} artículo(s)">
-    <span class="relative">
-        <x-icono nombre="carrito" class="size-6" />
-        <span class="absolute -top-2 -right-2 flex size-5 items-center justify-center rounded-full bg-acento-600 text-[11px] font-bold">{{ $articulos > 99 ? '99+' : $articulos }}</span>
+<a href="{{ route('carrito') }}" class="flex min-h-11 items-center gap-2 rounded-lg bg-cian-900/80 px-2.5 py-1 shadow-[0_0_12px_rgba(76,215,246,0.15)] hover:bg-cian-900" aria-label="Carrito de compras, {{ $articulos }} artículo(s)">
+    <span class="relative flex size-6 items-center justify-center">
+        <x-icono nombre="carrito" class="size-5 text-cian-400" />
+        <span class="absolute -top-1.5 -right-2 flex size-4 items-center justify-center rounded-full bg-marca-500 text-[10px] font-bold">{{ $articulos > 99 ? '99+' : $articulos }}</span>
     </span>
-    <span class="hidden text-left leading-tight lg:block">
-        <span class="block text-[11px] text-marca-100">Mi carrito</span>
-        <span class="block text-sm font-semibold">Q{{ number_format($total, 2) }}</span>
+    <span class="flex flex-col text-right leading-tight">
+        <span class="text-[10px] font-bold tracking-wide text-marca-300 uppercase">Carrito</span>
+        <span class="font-display text-xs font-bold text-cian-400 sm:text-sm">Q{{ number_format($total, 2) }}</span>
     </span>
 </a>

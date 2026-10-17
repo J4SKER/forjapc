@@ -1,6 +1,6 @@
-<footer class="mt-12 bg-marca-900 text-sm text-marca-100">
-    {{-- Beneficios --}}
-    <div class="border-b border-marca-800">
+<footer class="mt-12 bg-marca-900 text-sm text-marca-300">
+    {{-- Beneficios (en el inicio ya tienen su propia sección) --}}
+    <div @class(['border-b border-white/5', 'hidden' => request()->routeIs('inicio')])>
         <div class="mx-auto grid max-w-7xl grid-cols-2 gap-6 px-4 py-8 sm:px-6 lg:grid-cols-4 lg:px-8">
             @foreach ([
                 ['camion', 'Envío a todo el país', 'Entrega en los 22 departamentos'],
@@ -9,7 +9,7 @@
                 ['herramienta', 'Armado y pruebas', 'Tu PC lista para usar'],
             ] as [$icono, $titulo, $texto])
                 <div class="flex items-start gap-3">
-                    <span class="rounded-lg bg-marca-800 p-2 text-acento-500"><x-icono :nombre="$icono" class="size-6" /></span>
+                    <span class="rounded-lg bg-marca-800 p-2 text-cian-400"><x-icono :nombre="$icono" class="size-6" /></span>
                     <div>
                         <p class="font-semibold text-white">{{ $titulo }}</p>
                         <p class="text-xs">{{ $texto }}</p>
@@ -23,13 +23,16 @@
         <div>
             <a href="{{ route('inicio') }}" class="flex items-center gap-2 text-white">
                 <x-application-logo class="size-8" />
-                <span class="text-xl font-extrabold">Forja<span class="text-acento-500">PC</span></span>
+                <span class="flex flex-col leading-tight">
+                    <span class="font-display text-lg font-bold">ForjaPC</span>
+                    <span class="text-[10px] font-bold tracking-wider text-cian-400 uppercase">Hardware GT</span>
+                </span>
             </a>
             <p class="mt-3 leading-relaxed">Componentes de cómputo, monitores, periféricos y computadoras armadas a la medida en Ciudad de Guatemala.</p>
         </div>
 
         <div>
-            <p class="mb-3 font-semibold text-white">Categorías</p>
+            <p class="mb-3 font-display font-bold text-white">Categorías</p>
             <ul class="space-y-2">
                 @foreach (\App\Models\Categoria::menu()->take(6) as $categoria)
                     <li><a href="{{ route('tienda.categoria', $categoria['slug']) }}" class="hover:text-white">{{ $categoria['nombre'] }}</a></li>
@@ -38,7 +41,7 @@
         </div>
 
         <div>
-            <p class="mb-3 font-semibold text-white">Mi cuenta</p>
+            <p class="mb-3 font-display font-bold text-white">Mi cuenta</p>
             <ul class="space-y-2">
                 <li><a href="{{ route('dashboard') }}" class="hover:text-white">Mis pedidos</a></li>
                 <li><a href="{{ route('tienda.configurador') }}" class="hover:text-white">Arma tu PC</a></li>
@@ -50,7 +53,7 @@
         </div>
 
         <div>
-            <p class="mb-3 font-semibold text-white">Contacto</p>
+            <p class="mb-3 font-display font-bold text-white">Contacto</p>
             <ul class="space-y-2">
                 <li class="flex items-center gap-2"><x-icono nombre="ubicacion" class="size-4 shrink-0" /> Ciudad de Guatemala</li>
                 <li class="flex items-center gap-2"><x-icono nombre="telefono" class="size-4 shrink-0" /> {{ \App\Models\ParametroSistema::valor('telefono_contacto') }}</li>
@@ -64,7 +67,7 @@
         </div>
     </div>
 
-    <div class="border-t border-marca-800">
+    <div class="border-t border-white/5">
         <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-4 py-5 text-xs sm:flex-row sm:px-6 lg:px-8">
             <p>&copy; {{ date('Y') }} ForjaPC. Precios en quetzales, IVA incluido.</p>
             <div class="flex flex-wrap items-center gap-2">

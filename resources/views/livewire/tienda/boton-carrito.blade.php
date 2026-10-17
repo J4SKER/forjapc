@@ -11,14 +11,15 @@
             @endif
             <button type="button" wire:click="agregar" wire:loading.attr="disabled"
                     @class([
-                        'flex flex-1 items-center justify-center gap-2 rounded-lg font-semibold text-white transition disabled:opacity-60',
-                        'bg-acento-600 hover:bg-acento-700' => ! $agregado,
+                        'flex flex-1 items-center justify-center gap-2 rounded-lg font-semibold text-white transition active:scale-[0.98] disabled:opacity-60',
                         'bg-emerald-600 hover:bg-emerald-700' => $agregado,
-                        'px-5 py-3' => $conCantidad,
+                        'bg-linear-to-r from-acento-500 to-acento-600 px-5 py-3 font-display shadow-lg shadow-orange-500/30 hover:to-acento-700' => $conCantidad && ! $agregado,
+                        'bg-black hover:bg-marca-800' => ! $conCantidad && ! $agregado,
+                        'px-5 py-3' => $conCantidad && $agregado,
                         'px-3 py-2 text-sm' => ! $conCantidad,
                     ])>
                 <x-icono nombre="carrito" class="size-5" />
-                <span wire:loading.remove wire:target="agregar">{{ $agregado ? 'Agregado' : 'Agregar al carrito' }}</span>
+                <span wire:loading.remove wire:target="agregar">{{ $agregado ? 'Agregado' : ($conCantidad ? 'Agregar al carrito' : 'Añadir') }}</span>
                 <span wire:loading wire:target="agregar">Agregando…</span>
             </button>
         </div>

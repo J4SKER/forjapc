@@ -92,6 +92,6 @@ class CatalogoTiendaTest extends TestCase
 
     public function test_el_inicio_muestra_ofertas_y_destacados(): void
     {
-        $this->get('/')->assertOk()->assertSee('OFERTAS')->assertSee('Productos destacados')->assertSee('Logitech G502 HERO');
+        $this->get('/')->assertOk()->assertSee('Ofertas')->assertSee('Más populares')->assertSee('Productos destacados')->assertSee('Logitech G502 HERO');
     }
 }

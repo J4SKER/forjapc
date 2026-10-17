@@ -1,148 +1,150 @@
 <x-app-layout>
     @php
-        $banners = [
-            [
-                'etiqueta' => 'Configurador inteligente',
-                'titulo' => 'Arma tu PC a la medida',
-                'texto' => 'Elige cada pieza y nosotros validamos la compatibilidad por ti: socket, memoria, tamaño de la tarjeta de video y potencia de la fuente.',
-                'boton' => 'Empezar a armar',
-                'ruta' => route('tienda.configurador'),
-                'fondo' => 'from-marca-800 via-marca-700 to-marca-500',
-                'icono' => 'herramienta',
-            ],
-            [
-                'etiqueta' => 'Rendimiento gamer',
-                'titulo' => 'Tarjetas de video y procesadores',
-                'texto' => 'Lo último en GPUs y CPUs con existencias reales y precios actualizados.',
-                'boton' => 'Ver tarjetas de video',
-                'ruta' => route('tienda.categoria', 'tarjetas-de-video'),
-                'fondo' => 'from-acento-700 via-acento-600 to-orange-500',
-                'icono' => 'gpu',
-            ],
-            [
-                'etiqueta' => 'Cobertura nacional',
-                'titulo' => 'Envíos a los 22 departamentos',
-                'texto' => 'Paga en línea con PayPal o por transferencia y sigue tu pedido hasta la puerta de tu casa.',
-                'boton' => 'Ver monitores',
-                'ruta' => route('tienda.categoria', 'monitores'),
-                'fondo' => 'from-slate-900 via-slate-800 to-marca-600',
-                'icono' => 'camion',
-            ],
-        ];
+        $whatsapp = \App\Models\ParametroSistema::valor('whatsapp_contacto');
+        $pestanaInicial = $ofertas->isNotEmpty() ? 'ofertas' : 'destacados';
     @endphp
 
-    {{-- Carrusel principal --}}
-    <section class="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8"
-             x-data="{ actual: 0, total: {{ count($banners) }}, siguiente() { this.actual = (this.actual + 1) % this.total }, anterior() { this.actual = (this.actual - 1 + this.total) % this.total } }"
-             x-init="setInterval(() => siguiente(), 6000)" aria-roledescription="carrusel">
-        <div class="relative overflow-hidden rounded-2xl shadow-lg">
-            @foreach ($banners as $indice => $banner)
-                <div x-show="actual === {{ $indice }}" @if ($indice > 0) x-cloak @endif
-                     x-transition:enter="transition duration-500" x-transition:enter-start="opacity-0"
-                     class="relative bg-linear-to-r {{ $banner['fondo'] }} text-white">
-                    <div class="grid min-h-64 items-center gap-6 px-8 py-10 sm:min-h-80 sm:px-14 md:grid-cols-5">
-                        <div class="md:col-span-3">
-                            <span class="inline-block rounded-full bg-white/15 px-3 py-1 text-xs font-semibold tracking-wide uppercase">{{ $banner['etiqueta'] }}</span>
-                            <h2 class="mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl">{{ $banner['titulo'] }}</h2>
-                            <p class="mt-3 max-w-xl text-sm text-white/85 sm:text-base">{{ $banner['texto'] }}</p>
-                            <a href="{{ $banner['ruta'] }}" class="mt-6 inline-flex items-center gap-2 rounded-lg bg-white px-5 py-2.5 text-sm font-bold text-slate-900 shadow hover:bg-slate-100">
-                                {{ $banner['boton'] }} <x-icono nombre="chevron-derecha" class="size-4" />
-                            </a>
+    {{-- Portada --}}
+    <section class="mx-auto max-w-7xl px-4 pt-4 sm:px-6 sm:pt-6 lg:px-8">
+        <div class="relative overflow-hidden rounded-xl bg-marca-800 p-5 text-white shadow-xl sm:p-10 lg:p-12">
+            <div class="pointer-events-none absolute -top-12 -right-12 size-64 rounded-full bg-marca-500/20 blur-3xl"></div>
+            <div class="pointer-events-none absolute right-0 bottom-0 size-48 rounded-full bg-cian-400/10 blur-2xl"></div>
+
+            <div class="relative grid items-center gap-8 lg:grid-cols-5">
+                <div class="flex flex-col gap-3 lg:col-span-3">
+                    <span class="inline-flex items-center gap-1.5 self-start rounded-full bg-marca-500/30 px-2.5 py-1 text-cian-400">
+                        <span class="relative flex size-2">
+                            <span class="absolute inline-flex size-full animate-ping rounded-full bg-cian-400 opacity-75 motion-reduce:animate-none"></span>
+                            <span class="relative inline-flex size-2 rounded-full bg-cian-400"></span>
+                        </span>
+                        <span class="text-[10px] font-bold tracking-wider uppercase">Verificación de compatibilidad automática</span>
+                    </span>
+                    <h1 class="font-display text-2xl leading-tight font-bold tracking-tight sm:text-4xl lg:text-5xl lg:leading-[1.1] lg:font-extrabold">
+                        Arma la PC de tus sueños con precisión de taller.
+                    </h1>
+                    <p class="max-w-xl text-sm leading-relaxed text-marca-300 sm:text-base">
+                        Elige procesador, tarjeta madre, memoria y tarjeta de video: solo te mostramos piezas compatibles y con existencia, y calculamos la fuente que necesitas. Si quieres, nuestro taller la arma y la prueba antes de entregártela.
+                    </p>
+                    <div class="flex flex-col gap-2 pt-2 sm:flex-row">
+                        <a href="{{ route('tienda.configurador') }}" class="flex items-center justify-center gap-2 rounded-lg bg-linear-to-r from-acento-500 to-acento-600 px-5 py-3 font-display text-sm font-bold text-white shadow-lg shadow-orange-500/30 transition hover:to-acento-700 active:scale-[0.98] sm:text-base">
+                            Comenzar a armar mi PC <x-icono nombre="chevron-derecha" class="size-4.5" />
+                        </a>
+                        <a href="{{ route('tienda.buscar') }}" class="flex items-center justify-center gap-2 rounded-lg bg-white/10 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-white/20">
+                            <x-icono nombre="buscar" class="size-4.5 text-cian-400" /> Ver todo el catálogo
+                        </a>
+                    </div>
+                    <div class="grid grid-cols-3 gap-1.5 pt-3 sm:max-w-lg">
+                        @foreach ([['escudo', 'Garantía en cada producto'], ['herramienta', 'Armado y pruebas'], ['chat', 'Atención por WhatsApp']] as [$icono, $texto])
+                            <div class="flex items-center gap-1.5 rounded-lg bg-white/5 p-1.5 sm:p-2">
+                                <x-icono :nombre="$icono" class="size-4 shrink-0 text-cian-400" />
+                                <span class="text-[9px] leading-tight font-bold text-marca-300 sm:text-[11px]">{{ $texto }}</span>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+
+                <div class="hidden grid-cols-4 gap-3 lg:col-span-2 lg:grid" aria-hidden="true">
+                    @foreach (['cpu', 'placa', 'ram', 'gpu', 'disco', 'fuente', 'gabinete', 'ventilador'] as $pieza)
+                        <div class="flex aspect-square items-center justify-center rounded-xl bg-white/5 ring-1 ring-white/10">
+                            <x-icono :nombre="$pieza" class="size-10 text-cian-400/80" stroke-width="1.25" />
                         </div>
-                        <div class="hidden justify-center md:col-span-2 md:flex">
-                            <x-icono :nombre="$banner['icono']" class="size-48 text-white/25" stroke-width="1" />
-                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {{-- Categorías --}}
+    <section class="mx-auto mt-8 max-w-7xl px-4 sm:mt-10 sm:px-6 lg:px-8">
+        <div class="mb-3 flex items-end justify-between">
+            <div>
+                <h2 class="font-display text-lg font-bold text-slate-900 sm:text-2xl">Explora por componente</h2>
+                <p class="text-xs text-slate-500 sm:text-sm">Productos nuevos con garantía y existencias reales</p>
+            </div>
+            <a href="{{ route('tienda.buscar') }}" class="flex shrink-0 items-center text-sm font-bold whitespace-nowrap text-marca-600 hover:underline">Ver todo <x-icono nombre="chevron-derecha" class="size-4" /></a>
+        </div>
+        <div class="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-6 lg:gap-4">
+            @foreach (\App\Models\Categoria::menu() as $categoria)
+                <a href="{{ route('tienda.categoria', $categoria['slug']) }}" class="group flex flex-col rounded-xl bg-white p-3 shadow-sm ring-1 ring-slate-200/70 transition hover:shadow-md">
+                    <span class="flex h-20 items-center justify-center rounded-lg bg-marca-800 sm:h-24">
+                        <x-icono :nombre="$categoria['icono']" class="size-10 text-cian-400 transition duration-300 group-hover:scale-110" stroke-width="1.25" />
+                    </span>
+                    <span class="mt-2 font-display text-sm font-bold text-slate-900 group-hover:text-marca-600">{{ $categoria['nombre'] }}</span>
+                    <span class="text-[11px] text-slate-500">Ver productos</span>
+                </a>
+            @endforeach
+        </div>
+    </section>
+
+    {{-- Ofertas y destacados --}}
+    @if ($ofertas->isNotEmpty() || $destacados->isNotEmpty())
+        <section class="mx-auto mt-10 max-w-7xl px-4 sm:px-6 lg:px-8" x-data="{ pestana: '{{ $pestanaInicial }}' }">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                    <span class="flex items-center gap-1 text-[11px] font-bold tracking-wider text-acento-600 uppercase">
+                        <x-icono nombre="tarjeta" class="size-4" /> Precios especiales
+                    </span>
+                    <h2 class="font-display text-lg font-bold text-slate-900 sm:text-2xl">Productos destacados</h2>
+                </div>
+                <div class="flex items-center gap-1.5 rounded-xl bg-slate-200/70 p-1 sm:w-80" role="tablist">
+                    @foreach ([['ofertas', 'Ofertas', $ofertas], ['destacados', 'Más populares', $destacados]] as [$clave, $texto, $lista])
+                        @if ($lista->isNotEmpty())
+                            <button type="button" role="tab" @click="pestana = '{{ $clave }}'" :aria-selected="pestana === '{{ $clave }}'"
+                                    :class="pestana === '{{ $clave }}' ? 'bg-white text-slate-900 shadow-sm font-bold' : 'text-slate-600 font-semibold'"
+                                    class="flex-1 rounded-lg px-2 py-1.5 text-xs transition">{{ $texto }}</button>
+                        @endif
+                    @endforeach
+                </div>
+            </div>
+
+            @foreach ([['ofertas', $ofertas], ['destacados', $destacados]] as [$clave, $lista])
+                @if ($lista->isNotEmpty())
+                    <div x-show="pestana === '{{ $clave }}'" @if ($clave !== $pestanaInicial) x-cloak @endif role="tabpanel"
+                         class="mt-4 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
+                        @foreach ($lista as $producto)
+                            <x-producto-card :producto="$producto" />
+                        @endforeach
+                    </div>
+                @endif
+            @endforeach
+        </section>
+    @endif
+
+    {{-- Ayuda por WhatsApp --}}
+    <section class="mx-auto mt-10 max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col gap-4 overflow-hidden rounded-xl bg-linear-to-r from-marca-500 via-blue-700 to-indigo-900 p-5 text-white shadow-lg sm:flex-row sm:items-center sm:p-8">
+            <span class="flex size-12 shrink-0 items-center justify-center rounded-xl bg-white/10 backdrop-blur-md">
+                <x-icono nombre="herramienta" class="size-7" />
+            </span>
+            <div class="min-w-0 flex-1">
+                <h2 class="font-display text-lg leading-tight font-bold sm:text-xl">¿No sabes qué piezas elegir?</h2>
+                <p class="text-sm text-white/80">Cuéntanos qué juegos o programas usas y tu presupuesto, y te recomendamos una configuración.</p>
+            </div>
+            <a href="https://wa.me/{{ $whatsapp }}" target="_blank" rel="noopener" class="flex items-center justify-center gap-2 rounded-lg bg-white px-5 py-2.5 font-display text-sm font-bold text-marca-600 shadow-sm hover:bg-white/90">
+                <x-icono nombre="chat" class="size-4.5" /> Chatear por WhatsApp
+            </a>
+        </div>
+    </section>
+
+    {{-- Por qué ForjaPC --}}
+    <section class="mx-auto mt-10 max-w-7xl px-4 sm:px-6 lg:px-8">
+        <span class="text-[11px] font-bold tracking-wider text-marca-600 uppercase">Por qué confiar en ForjaPC</span>
+        <h2 class="font-display text-lg font-bold text-slate-900 sm:text-2xl">Compromiso de alto rendimiento</h2>
+        <div class="mt-3 grid gap-2.5 sm:grid-cols-2 lg:grid-cols-4 lg:gap-4">
+            @foreach ([
+                ['camion', 'bg-marca-100 text-marca-600', 'Envío a los 22 departamentos', 'Te enviamos el número de guía de la mensajería para que sigas tu paquete hasta tu puerta. También puedes recoger en tienda.'],
+                ['escudo', 'bg-emerald-100 text-emerald-700', 'Garantía en cada producto', 'Productos nuevos con la garantía indicada en cada ficha. Te atendemos directamente en Ciudad de Guatemala.'],
+                ['tarjeta', 'bg-amber-100 text-amber-800', 'Pago seguro', 'Paga con PayPal, con tarjeta de débito o crédito, o por transferencia bancaria. Los datos de tu tarjeta solo los recibe PayPal.'],
+                ['herramienta', 'bg-purple-100 text-purple-800', 'Armado y pruebas en taller', 'Cada PC armada pasa por una lista de verificación y pruebas de encendido, temperatura y estabilidad antes de entregarse.'],
+            ] as [$icono, $color, $titulo, $texto])
+                <div class="flex items-start gap-3.5 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200/70">
+                    <span class="flex size-11 shrink-0 items-center justify-center rounded-xl {{ $color }}"><x-icono :nombre="$icono" class="size-6" /></span>
+                    <div>
+                        <h3 class="font-display text-sm font-bold text-slate-900">{{ $titulo }}</h3>
+                        <p class="mt-0.5 text-xs leading-relaxed text-slate-600">{{ $texto }}</p>
                     </div>
                 </div>
             @endforeach
-
-            <button type="button" @click="anterior()" class="absolute top-1/2 left-3 -translate-y-1/2 rounded-full bg-black/25 p-2 text-white hover:bg-black/40" aria-label="Anterior">
-                <x-icono nombre="chevron-izquierda" />
-            </button>
-            <button type="button" @click="siguiente()" class="absolute top-1/2 right-3 -translate-y-1/2 rounded-full bg-black/25 p-2 text-white hover:bg-black/40" aria-label="Siguiente">
-                <x-icono nombre="chevron-derecha" />
-            </button>
-            <div class="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-2">
-                @foreach ($banners as $indice => $banner)
-                    <button type="button" @click="actual = {{ $indice }}" class="h-2 rounded-full bg-white transition-all"
-                            :class="actual === {{ $indice }} ? 'w-6' : 'w-2 opacity-50'" aria-label="Ir a la diapositiva {{ $indice + 1 }}"></button>
-                @endforeach
-            </div>
-        </div>
-    </section>
-
-    {{-- Categorías destacadas --}}
-    <section class="mx-auto mt-10 max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="mb-4 flex items-end justify-between">
-            <h2 class="text-xl font-bold text-slate-900 sm:text-2xl">Compra por categoría</h2>
-        </div>
-        <div class="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
-            @foreach (\App\Models\Categoria::menu() as $categoria)
-                <a href="{{ route('tienda.categoria', $categoria['slug']) }}"
-                   class="group flex flex-col items-center gap-2 rounded-xl border border-slate-200 bg-white px-2 py-5 text-center shadow-sm transition hover:-translate-y-0.5 hover:border-marca-500 hover:shadow-md">
-                    <span class="rounded-full bg-marca-50 p-3 text-marca-600 transition group-hover:bg-marca-600 group-hover:text-white">
-                        <x-icono :nombre="$categoria['icono']" class="size-7" />
-                    </span>
-                    <span class="text-xs font-semibold text-slate-700 sm:text-sm">{{ $categoria['nombre'] }}</span>
-                </a>
-            @endforeach
-        </div>
-    </section>
-
-    {{-- Ofertas --}}
-    @if ($ofertas->isNotEmpty())
-        <section class="mx-auto mt-10 max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div class="mb-4 flex items-end justify-between">
-                <h2 class="flex items-center gap-2 text-xl font-bold text-slate-900 sm:text-2xl">
-                    <span class="rounded-md bg-acento-600 px-2 py-0.5 text-sm font-bold text-white">OFERTAS</span> Precios especiales
-                </h2>
-            </div>
-            <div class="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-                @foreach ($ofertas as $producto)
-                    <x-producto-card :producto="$producto" />
-                @endforeach
-            </div>
-        </section>
-    @endif
-
-    {{-- Destacados --}}
-    @if ($destacados->isNotEmpty())
-        <section class="mx-auto mt-10 max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div class="mb-4 flex items-end justify-between">
-                <h2 class="text-xl font-bold text-slate-900 sm:text-2xl">Productos destacados</h2>
-                <a href="{{ route('tienda.buscar') }}" class="text-sm font-semibold text-marca-600 hover:underline">Ver todo</a>
-            </div>
-            <div class="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
-                @foreach ($destacados as $producto)
-                    <x-producto-card :producto="$producto" />
-                @endforeach
-            </div>
-        </section>
-    @endif
-
-    {{-- Configurador --}}
-    <section class="mx-auto mt-10 max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="grid overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 lg:grid-cols-2">
-            <div class="p-8 sm:p-10">
-                <span class="text-sm font-semibold text-acento-600">Exclusivo de ForjaPC</span>
-                <h2 class="mt-2 text-2xl font-extrabold text-slate-900 sm:text-3xl">Tu computadora, pieza por pieza</h2>
-                <p class="mt-3 text-slate-600">El configurador solo te muestra piezas compatibles y con existencia, calcula la fuente que necesitas y te da el precio total al instante. Si quieres, nuestro taller la arma y la prueba antes de entregártela.</p>
-                <ul class="mt-6 grid gap-3 text-sm text-slate-700 sm:grid-cols-2">
-                    @foreach (['Validación de compatibilidad', 'Cálculo de consumo eléctrico', 'Guarda y comparte tu configuración', 'Armado y pruebas de estrés'] as $beneficio)
-                        <li class="flex items-center gap-2"><x-icono nombre="escudo" class="size-5 text-emerald-600" /> {{ $beneficio }}</li>
-                    @endforeach
-                </ul>
-                <a href="{{ route('tienda.configurador') }}" class="mt-8 inline-flex items-center gap-2 rounded-lg bg-acento-600 px-6 py-3 font-semibold text-white shadow hover:bg-acento-700">
-                    <x-icono nombre="herramienta" /> Arma tu PC ahora
-                </a>
-            </div>
-            <div class="grid grid-cols-4 gap-3 bg-linear-to-br from-marca-800 to-marca-600 p-8 text-white sm:p-10">
-                @foreach (['cpu', 'placa', 'ram', 'gpu', 'disco', 'fuente', 'gabinete', 'ventilador'] as $pieza)
-                    <div class="flex aspect-square items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/15">
-                        <x-icono :nombre="$pieza" class="size-10" stroke-width="1.25" />
-                    </div>
-                @endforeach
-            </div>
         </div>
     </section>
 </x-app-layout>

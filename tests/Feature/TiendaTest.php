@@ -13,8 +13,8 @@ class TiendaTest extends TestCase
     {
         $this->get('/')
             ->assertOk()
-            ->assertSee('Arma tu PC a la medida')
-            ->assertSee('Compra por categoría');
+            ->assertSee('Arma la PC de tus sueños')
+            ->assertSee('Explora por componente');
     }
 
     public function test_la_busqueda_muestra_el_termino_escapado(): void

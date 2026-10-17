@@ -7,19 +7,28 @@
 
 @theme {
     --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Plus Jakarta Sans', 'Inter', ui-sans-serif, system-ui, sans-serif;
 
-    /* Marca ForjaPC: azul marino y rojo de la propuesta */
-    --color-marca-50: #eef3fa;
-    --color-marca-100: #d6e1f1;
-    --color-marca-500: #2d4f86;
-    --color-marca-600: #233f6d;
-    --color-marca-700: #1c3258;
-    --color-marca-800: #152645;
-    --color-marca-900: #0e1a31;
+    /* Marca ForjaPC (diseño de Stitch): azul marino, azul eléctrico, cian y naranja */
+    --color-marca-50: #eef2fe;
+    --color-marca-100: #dbe1ff;
+    --color-marca-200: #b4c5ff;
+    --color-marca-300: #7c839b;
+    --color-marca-500: #316bf3;
+    --color-marca-600: #0051d5;
+    --color-marca-700: #003ea8;
+    --color-marca-800: #131b2e;
+    --color-marca-900: #0b1120;
 
-    --color-acento-500: #e11d2a;
-    --color-acento-600: #c00f1c;
-    --color-acento-700: #9d0c17;
+    --color-cian-300: #acedff;
+    --color-cian-400: #4cd7f6;
+    --color-cian-900: #001f26;
+
+    --color-acento-500: #f59e0b;
+    --color-acento-600: #ea580c;
+    --color-acento-700: #c2410c;
+
+    --color-superficie: #f7f9fb;
 }
 
 [x-cloak] {

@@ -9,12 +9,12 @@
         <meta name="description" content="ForjaPC: componentes de cómputo, monitores, periféricos y computadoras armadas a la medida con envío a toda Guatemala.">
 
         <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800&display=swap" rel="stylesheet" />
+        <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700,800|plus-jakarta-sans:600,700,800&display=swap" rel="stylesheet" />
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         @livewireStyles
     </head>
-    <body class="flex min-h-screen flex-col bg-slate-100 font-sans text-slate-800 antialiased">
+    <body class="flex min-h-screen flex-col bg-superficie font-sans text-slate-800 antialiased">
         @include('partials.tienda.encabezado')
 
         <main class="flex-1">
