@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\EstadoPago;
 use App\Enums\EstadoPedido;
 use App\Enums\MetodoPago;
 use App\Enums\TipoMovimiento;
@@ -145,6 +146,10 @@ class PedidoService
 
             $this->liberarReservas($fila);
             $fila->forceFill(['motivo_cancelacion' => $motivo])->save();
+
+            // Las órdenes de PayPal sin cobrar ya no quedan «por verificar».
+            $fila->pagos()->where('metodo', MetodoPago::Paypal)->where('estado', EstadoPago::Pendiente)
+                ->update(['estado' => EstadoPago::Rechazado->value, 'motivo_rechazo' => 'Pedido cancelado sin completar el pago.', 'updated_at' => now()]);
 
             return $this->cambiarEstado($pedido, EstadoPedido::Cancelado, $motivo);
         });

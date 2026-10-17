@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use DomainException;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Cache;
@@ -59,7 +60,8 @@ class PayPalClient
         } catch (RequestException $e) {
             // Si la orden ya se capturó (p. ej. desde el webhook), se consulta su estado.
             if ($e->response->json('details.0.issue') !== 'ORDER_ALREADY_CAPTURED') {
-                throw $e;
+                // Un 4xx es una respuesta de PayPal (orden no aprobada, inexistente…), no una falla de conexión.
+                throw $e->response->clientError() ? new DomainException('PayPal no aprobó este pago, así que no se realizó ningún cobro. Intenta de nuevo.') : $e;
             }
             $datos = $this->http()->get("/v2/checkout/orders/{$ordenId}")->throw()->json();
         }

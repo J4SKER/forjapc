@@ -15,6 +15,7 @@ use App\Models\Reembolso;
 use App\Models\User;
 use App\Notifications\PagoRechazado;
 use DomainException;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -154,6 +155,11 @@ class PagoService
                 throw new DomainException("El pedido está «{$pedido->estado->etiqueta()}» y ya no puede recibir pagos.");
             }
 
+            // Un pago de PayPal solo se aprueba con una captura real, nunca a mano.
+            if ($fila->metodo === MetodoPago::Paypal && blank($fila->datos['captura_id'] ?? null)) {
+                throw new DomainException('Los pagos de PayPal se aprueban solos cuando PayPal confirma el cobro; no se pueden aprobar a mano.');
+            }
+
             if ((float) $fila->monto + 0.009 < (float) $pedido->total) {
                 throw new DomainException('El monto pagado (Q'.number_format((float) $fila->monto, 2).') es menor que el total del pedido (Q'.number_format((float) $pedido->total, 2).'). Rechaza el comprobante e indica al cliente que complete el pago.');
             }
@@ -165,6 +171,7 @@ class PagoService
             ])->save();
 
             $this->pedidos->registrarPago($pedido, $fila);
+            $this->descartarOrdenesAbandonadas($pedido, 'El pedido se pagó con otra orden.');
 
             if ($verificador) {
                 $this->bitacora->registrar('pago_aprobado', $fila, null, ['pedido' => $pedido->numero, 'monto' => $fila->monto]);
@@ -218,11 +225,9 @@ class PagoService
             $esTotal = abs($monto - $fila->saldoReembolsable()) < 0.01;
             $devolver = $devolverInventario && $esTotal && ($pedido->estado->estaEnTienda() || $pedido->estado === EstadoPedido::Entregado);
 
-            $referencia = null;
-            if ($fila->metodo === MetodoPago::Paypal && $this->paypal->configurado()) {
-                $usd = round($monto / (float) $fila->tipo_cambio, 2);
-                $referencia = $this->paypal->reembolsar((string) ($fila->datos['captura_id'] ?? ''), $usd, $motivo);
-            }
+            $referencia = $fila->metodo === MetodoPago::Paypal && $this->paypal->configurado()
+                ? $this->reembolsarEnPaypal($fila, $monto, $esTotal, $motivo)
+                : null;
 
             $reembolso = new Reembolso;
             $reembolso->forceFill([
@@ -273,8 +278,7 @@ class PagoService
                 $pago = Pago::query()->where('metodo', MetodoPago::Paypal)->where('referencia_externa', $ordenId)->first();
 
                 if ($pago && $pago->estado === EstadoPago::Pendiente && $pago->pedido->estaPendienteDePago()) {
-                    $pago->forceFill(['datos' => ['captura_id' => data_get($evento, 'resource.id'), 'webhook' => true]])->save();
-                    $this->aprobar($pago);
+                    $this->aprobarCapturaDeWebhook($pago, (array) data_get($evento, 'resource', []));
                 }
             }
 
@@ -291,6 +295,61 @@ class PagoService
         } catch (Throwable $e) {
             $registro->forceFill(['error' => mb_substr($e->getMessage(), 0, 255)])->save();
         }
+    }
+
+    /**
+     * Aprueba con los datos de la captura que trae el webhook, con las mismas validaciones
+     * de monto y moneda que la captura desde el navegador, y guarda la comisión.
+     *
+     * @param  array<string, mixed>  $captura
+     */
+    private function aprobarCapturaDeWebhook(Pago $pago, array $captura): void
+    {
+        $monto = (float) data_get($captura, 'amount.value', 0);
+
+        if (data_get($captura, 'status') !== 'COMPLETED' || data_get($captura, 'amount.currency_code') !== 'USD' || abs($monto - (float) $pago->monto_usd) > 0.01) {
+            throw new DomainException("La captura del webhook no coincide con el pago esperado (US\${$monto}).");
+        }
+
+        $pago->forceFill([
+            'comision' => round((float) data_get($captura, 'seller_receivable_breakdown.paypal_fee.value', 0) * (float) $pago->tipo_cambio, 2),
+            'datos' => ['captura_id' => data_get($captura, 'id'), 'webhook' => true],
+        ])->save();
+
+        $this->aprobar($pago);
+    }
+
+    /**
+     * Devuelve el dinero en PayPal. Cada parcial se convierte a dólares igual; el que cierra el
+     * saldo devuelve exactamente lo que queda de la captura, para no pasarse por redondeo.
+     */
+    private function reembolsarEnPaypal(Pago $pago, float $monto, bool $esTotal, string $motivo): string
+    {
+        $tasa = (float) $pago->tipo_cambio;
+        $saldoUsd = round((float) $pago->monto_usd - $pago->reembolsos()->get()->sum(fn (Reembolso $r) => round((float) $r->monto / $tasa, 2)), 2);
+        $usd = $esTotal ? $saldoUsd : min(round($monto / $tasa, 2), $saldoUsd);
+
+        if ($usd < 0.01) {
+            throw new DomainException('El monto es demasiado pequeño para reembolsarlo por PayPal (menos de US$0.01).');
+        }
+
+        try {
+            return $this->paypal->reembolsar((string) ($pago->datos['captura_id'] ?? ''), $usd, $motivo);
+        } catch (RequestException $e) {
+            Log::warning("PayPal rechazó el reembolso del pago {$pago->id}: ".$e->response->body());
+            $detalle = $e->response->json('details.0.description') ?? $e->response->json('message') ?? 'error '.$e->response->status();
+
+            throw new DomainException("PayPal no aceptó el reembolso ({$detalle}). No se registró nada.");
+        }
+    }
+
+    /**
+     * Las órdenes de PayPal que el cliente abrió pero no pagó dejan de figurar como pendientes.
+     */
+    public function descartarOrdenesAbandonadas(Pedido $pedido, string $motivo): void
+    {
+        $pedido->pagos()->where('metodo', MetodoPago::Paypal)->where('estado', EstadoPago::Pendiente)
+            ->update(['estado' => EstadoPago::Rechazado->value, 'motivo_rechazo' => $motivo, 'updated_at' => now()]);
     }
 
     private function asegurarCobrable(Pedido $pedido, bool $permitirVencido = true): void

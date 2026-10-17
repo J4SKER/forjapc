@@ -167,13 +167,18 @@ class PagosTest extends TestCase
             '*/verify-webhook-signature' => Http::response(['verification_status' => 'SUCCESS']),
         ]);
 
-        $evento = ['id' => 'WH-EVT-1', 'event_type' => 'PAYMENT.CAPTURE.COMPLETED', 'resource' => ['id' => 'CAP-3', 'supplementary_data' => ['related_ids' => ['order_id' => 'ORDEN-3']]]];
+        $evento = ['id' => 'WH-EVT-1', 'event_type' => 'PAYMENT.CAPTURE.COMPLETED', 'resource' => [
+            'id' => 'CAP-3', 'status' => 'COMPLETED', 'amount' => ['currency_code' => 'USD', 'value' => '50.97'],
+            'seller_receivable_breakdown' => ['paypal_fee' => ['value' => '2.00']],
+            'supplementary_data' => ['related_ids' => ['order_id' => 'ORDEN-3']],
+        ]];
 
         $this->postJson('/webhooks/paypal', $evento)->assertOk();
         $this->postJson('/webhooks/paypal', $evento)->assertOk();
 
         $this->assertSame(1, EventoWebhook::query()->count());
         $this->assertSame(EstadoPago::Aprobado, $pago->refresh()->estado);
+        $this->assertEquals(15.50, (float) $pago->comision); // DEF-020: US$2.00 × 7.75
         $this->assertSame(1, $this->producto('logitech-g502-hero')->movimientos()->where('tipo', 'SALIDA_VENTA')->count());
     }
 
