@@ -8,7 +8,7 @@
     <form method="POST" enctype="multipart/form-data"
           action="{{ $producto->exists ? route('admin.productos.update', $producto) : route('admin.productos.store') }}"
           x-data="{ categoria: '{{ old('categoria_id', $producto->categoria_id) }}', tipos: @js($tiposPorCategoria), get tipo() { return this.tipos[this.categoria] ?? null } }"
-          class="mt-4 grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+          class="mt-4 grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
         @csrf
         @if ($producto->exists)
             @method('PUT')

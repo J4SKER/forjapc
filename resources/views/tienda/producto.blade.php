@@ -9,7 +9,7 @@
         $estrellas = fn (float $valor, string $tamano) => collect(range(1, 5))->map(fn ($i) => '<span class="'.$tamano.' '.($i <= round($valor) ? 'text-amber-500' : 'text-slate-300').'" aria-hidden="true">★</span>')->implode('');
     @endphp
 
-    <div class="relative mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
+    <div class="relative mx-auto max-w-7xl overflow-x-clip px-4 py-5 sm:px-6 lg:px-8">
         <div class="pointer-events-none absolute -top-10 left-1/4 -z-10 size-96 rounded-full bg-marca-100/40 blur-3xl"></div>
 
         <nav class="mb-5 flex items-center gap-1 text-xs text-slate-500" aria-label="Ruta">
@@ -21,7 +21,7 @@
         </nav>
 
         {{-- Compra --}}
-        <div class="grid items-start gap-6 lg:grid-cols-12 lg:gap-10">
+        <div class="grid grid-cols-1 items-start gap-6 lg:grid-cols-12 lg:gap-10">
             {{-- Galería --}}
             <div class="flex flex-col gap-3 lg:col-span-7" x-data="{ actual: 0, total: {{ max(1, $producto->imagenes->count()) }} }">
                 <div class="group relative flex aspect-4/3 items-center justify-center overflow-hidden rounded-xl bg-white p-6 shadow-md sm:aspect-16/11">
@@ -96,7 +96,7 @@
                             <span class="relative inline-flex size-3 rounded-full bg-emerald-600"></span>
                         </span>
                         @if ($producto->stockBajo())
-                            ¡Últimas {{ $producto->disponible() }} unidades para entrega inmediata!
+                            {{ $producto->disponible() === 1 ? '¡Última unidad para entrega inmediata!' : '¡Últimas '.$producto->disponible().' unidades para entrega inmediata!' }}
                         @else
                             En existencia ({{ $producto->disponible() }} {{ $producto->disponible() === 1 ? 'unidad' : 'unidades' }} para entrega inmediata)
                         @endif

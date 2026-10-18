@@ -31,7 +31,7 @@
             @if (! $disponible)
                 <span class="shrink-0 rounded bg-red-50 px-1.5 py-0.5 text-[10px] font-semibold text-red-700">Sin inventario</span>
             @elseif ($producto->stockBajo())
-                <span class="shrink-0 rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800">Últimas {{ $producto->disponible() }}</span>
+                <span class="shrink-0 rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800">{{ $producto->disponible() === 1 ? 'Última unidad' : 'Últimas '.$producto->disponible() }}</span>
             @else
                 <span class="inline-flex shrink-0 items-center gap-1 rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700"><span class="size-1.5 rounded-full bg-emerald-500"></span> En existencia</span>
             @endif

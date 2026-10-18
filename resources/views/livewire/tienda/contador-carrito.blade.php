@@ -1,4 +1,4 @@
-<a href="{{ route('carrito') }}" class="flex min-h-11 items-center gap-2 rounded-lg bg-cian-900/80 px-2.5 py-1 shadow-[0_0_12px_rgba(76,215,246,0.15)] hover:bg-cian-900" aria-label="Carrito de compras, {{ $articulos }} artículo(s)">
+<a href="{{ route('carrito') }}" class="flex min-h-11 items-center gap-2 rounded-lg bg-cian-900/80 px-2.5 py-1 shadow-[0_0_12px_rgba(76,215,246,0.15)] hover:bg-cian-900" aria-label="Carrito de compras, {{ $articulos }} {{ $articulos === 1 ? 'artículo' : 'artículos' }}">
     <span class="relative flex size-6 items-center justify-center">
         <x-icono nombre="carrito" class="size-5 text-cian-400" />
         <span class="absolute -top-1.5 -right-2 flex size-4 items-center justify-center rounded-full bg-marca-500 text-[10px] font-bold">{{ $articulos > 99 ? '99+' : $articulos }}</span>

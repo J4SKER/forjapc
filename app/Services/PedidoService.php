@@ -171,7 +171,9 @@ class PedidoService
 
             $ordenes = $this->taller->crearOrdenes($pedido);
             $siguiente = $ordenes > 0 ? EstadoPedido::EnArmado : EstadoPedido::EnPreparacion;
-            $this->cambiarEstado($pedido, $siguiente, $ordenes > 0 ? "Se generaron {$ordenes} orden(es) de armado." : null, notificar: false);
+            $this->cambiarEstado($pedido, $siguiente, match (true) {
+                $ordenes === 1 => 'Se generó 1 orden de armado.', $ordenes > 1 => "Se generaron {$ordenes} órdenes de armado.", default => null
+            }, notificar: false);
 
             DB::afterCommit(fn () => $pedido->usuario->notify(new PedidoActualizado($pedido)));
 

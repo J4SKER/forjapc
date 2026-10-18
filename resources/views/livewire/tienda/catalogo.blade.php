@@ -88,7 +88,7 @@
         </p>
     @endif
 
-    <div class="grid items-start gap-6 lg:grid-cols-12">
+    <div class="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
         {{-- Filtros --}}
         <div x-show="filtrosMovil" x-cloak class="fixed inset-0 z-40 bg-black/40 lg:hidden" @click="filtrosMovil = false"></div>
         <aside class="fixed inset-y-0 left-0 z-50 flex w-80 max-w-[85%] -translate-x-full flex-col overflow-y-auto bg-white p-4 shadow-xl transition-transform lg:sticky lg:top-44 lg:z-auto lg:col-span-3 lg:w-auto lg:max-w-none lg:translate-x-0 lg:rounded-xl lg:shadow-sm lg:ring-1 lg:ring-slate-200/70"

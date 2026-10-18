@@ -7,7 +7,7 @@
 
     <a href="{{ route('admin.pedidos.index') }}" class="text-sm text-marca-600 hover:underline">&larr; Volver a pedidos</a>
 
-    <div class="mt-4 grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
+    <div class="mt-4 grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
         <div class="space-y-6">
             <section class="rounded-xl bg-white shadow-sm ring-1 ring-slate-200">
                 <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-4">

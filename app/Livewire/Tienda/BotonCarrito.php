@@ -36,6 +36,7 @@ class BotonCarrito extends Component
             $this->mensaje = null;
             $this->dispatch('carrito-actualizado');
         } catch (DomainException $e) {
+            $this->agregado = false;
             $this->mensaje = $e->getMessage();
         }
     }

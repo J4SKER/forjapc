@@ -1,7 +1,7 @@
 <x-admin-layout :title="$usuario->exists ? 'Editar usuario' : 'Nuevo usuario interno'">
     <a href="{{ route('admin.usuarios.index') }}" class="text-sm text-marca-600 hover:underline">&larr; Volver a usuarios</a>
 
-    <div class="mt-4 grid items-start gap-6 xl:grid-cols-[minmax(0,42rem)_1fr]">
+    <div class="mt-4 grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,42rem)_1fr]">
     <form method="POST" action="{{ $usuario->exists ? route('admin.usuarios.update', $usuario) : route('admin.usuarios.store') }}"
           class="space-y-5 rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
         @csrf

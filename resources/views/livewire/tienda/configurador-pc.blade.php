@@ -74,7 +74,7 @@
         <div class="rounded-lg bg-marca-50 px-4 py-2 text-sm text-marca-800 ring-1 ring-marca-100">{{ $mensaje }}</div>
     @endif
 
-    <div class="grid items-start gap-6 lg:grid-cols-12">
+    <div class="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
         {{-- Candidatos del paso actual --}}
         <section class="flex flex-col gap-4 lg:col-span-8">
             <div class="flex flex-col gap-3 rounded-lg bg-white p-4 shadow-sm ring-1 ring-slate-200/70 sm:flex-row sm:items-center sm:justify-between">

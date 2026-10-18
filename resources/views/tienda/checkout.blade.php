@@ -33,7 +33,7 @@
                   get esCf() { return this.nit.trim().toUpperCase() === 'CF' },
                   q(v) { return 'Q' + v.toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) },
               }"
-              class="grid items-start gap-6 pb-10 lg:grid-cols-12">
+              class="grid grid-cols-1 items-start gap-6 pb-10 lg:grid-cols-12">
             @csrf
 
             <div class="flex min-w-0 flex-col gap-6 lg:col-span-8">

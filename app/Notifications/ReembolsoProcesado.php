@@ -15,7 +15,10 @@ class ReembolsoProcesado extends Notification
 {
     use ResumenPedido;
 
-    public function __construct(public Reembolso $reembolso, public bool $esTotal) {}
+    /**
+     * @param  float|null  $usd  Dólares que PayPal devolvió de verdad (el último parcial cierra el saldo exacto).
+     */
+    public function __construct(public Reembolso $reembolso, public bool $esTotal, public ?float $usd = null) {}
 
     /**
      * @return array<int, string>
@@ -30,17 +33,25 @@ class ReembolsoProcesado extends Notification
         $pago = $this->reembolso->pago;
         $pedido = $pago->pedido;
         $monto = 'Q'.number_format((float) $this->reembolso->monto, 2);
+        $devueltoAntes = round($pago->montoReembolsado() - (float) $this->reembolso->monto, 2);
+
+        if (! $this->esTotal) {
+            $primera = "Te devolvimos **{$monto}** del pedido **{$pedido->numero}**.";
+        } elseif ($devueltoAntes > 0) {
+            // Cierra el saldo después de reembolsos parciales: se aclara el total devuelto.
+            $primera = "Te devolvimos **{$monto}**, el saldo que quedaba del pedido **{$pedido->numero}**. En total te reembolsamos **Q".number_format($pago->montoReembolsado(), 2).'**, todo lo que pagaste.';
+        } else {
+            $primera = "Te devolvimos **{$monto}**, el total que pagaste por el pedido **{$pedido->numero}**.";
+        }
 
         $mensaje = (new MailMessage)
             ->subject(($this->esTotal ? 'Reembolsamos tu pedido ' : 'Reembolso parcial de tu pedido ').$pedido->numero)
             ->greeting('¡Hola, '.strtok($notifiable->nombre, ' ').'!')
-            ->line($this->esTotal
-                ? "Te devolvimos **{$monto}**, el total que pagaste por el pedido **{$pedido->numero}**."
-                : "Te devolvimos **{$monto}** del pedido **{$pedido->numero}**.")
+            ->line($primera)
             ->line("**Motivo:** {$this->reembolso->motivo}");
 
         if ($pago->metodo === MetodoPago::Paypal) {
-            $usd = number_format(round((float) $this->reembolso->monto / (float) $pago->tipo_cambio, 2), 2);
+            $usd = number_format($this->usd ?? round((float) $this->reembolso->monto / (float) $pago->tipo_cambio, 2), 2);
             $mensaje->line("**¿Dónde recibo el dinero?** Vuelve por PayPal al mismo medio con el que pagaste (US\${$usd}). En tu cuenta PayPal se refleja de inmediato; si pagaste con tarjeta, tu banco puede tardar algunos días hábiles en mostrarlo.");
         } else {
             $mensaje->line('**¿Dónde recibo el dinero?** Como pagaste por transferencia, nuestro equipo de ventas te contactará para confirmar la cuenta bancaria donde te lo depositaremos.');

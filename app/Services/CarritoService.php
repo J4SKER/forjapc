@@ -54,6 +54,12 @@ class CarritoService
         $carrito = $this->actual(crear: true);
         $item = $carrito->items()->firstOrNew(['tipo' => CarritoItem::PRODUCTO, 'producto_id' => $producto->id]);
         $nueva = min(($item->cantidad ?? 0) + $cantidad, self::MAXIMO_POR_PRODUCTO, $producto->disponible());
+
+        // Si ya está todo lo disponible en el carrito, se avisa en lugar de decir «Agregado».
+        if ($item->exists && $nueva <= $item->cantidad) {
+            throw new DomainException("Ya tienes en tu carrito todas las unidades disponibles de «{$producto->nombre}» ({$item->cantidad}).");
+        }
+
         $item->cantidad = max(1, $nueva);
         $item->save();
         $carrito->touch();
@@ -178,7 +184,7 @@ class CarritoService
         $problema = match (true) {
             $producto === null || ! $producto->activo => 'Este producto ya no está a la venta.',
             $producto->disponible() < $item->cantidad => $producto->disponible() > 0
-                ? "Solo quedan {$producto->disponible()} unidad(es)."
+                ? 'Solo '.($producto->disponible() === 1 ? 'queda 1 unidad.' : "quedan {$producto->disponible()} unidades.")
                 : 'Sin existencia.',
             default => null,
         };

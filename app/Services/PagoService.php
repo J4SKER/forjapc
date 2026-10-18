@@ -226,9 +226,9 @@ class PagoService
             $esTotal = abs($monto - $fila->saldoReembolsable()) < 0.01;
             $devolver = $devolverInventario && $esTotal && ($pedido->estado->estaEnTienda() || $pedido->estado === EstadoPedido::Entregado);
 
-            $referencia = $fila->metodo === MetodoPago::Paypal && $this->paypal->configurado()
+            [$referencia, $usd] = $fila->metodo === MetodoPago::Paypal && $this->paypal->configurado()
                 ? $this->reembolsarEnPaypal($fila, $monto, $esTotal, $motivo)
-                : null;
+                : [null, null];
 
             $reembolso = new Reembolso;
             $reembolso->forceFill([
@@ -253,7 +253,7 @@ class PagoService
 
             $this->bitacora->registrar('reembolso_registrado', $reembolso, null, ['pedido' => $pedido->numero, 'monto' => $monto, 'total' => $esTotal]);
             ReembolsoRegistrado::dispatch($reembolso);
-            DB::afterCommit(fn () => $pedido->usuario->notify(new ReembolsoProcesado($reembolso, $esTotal)));
+            DB::afterCommit(fn () => $pedido->usuario->notify(new ReembolsoProcesado($reembolso, $esTotal, $usd)));
 
             return $reembolso;
         });
@@ -324,8 +324,10 @@ class PagoService
     /**
      * Devuelve el dinero en PayPal. Cada parcial se convierte a dólares igual; el que cierra el
      * saldo devuelve exactamente lo que queda de la captura, para no pasarse por redondeo.
+     *
+     * @return array{string, float} Referencia del reembolso en PayPal y dólares devueltos.
      */
-    private function reembolsarEnPaypal(Pago $pago, float $monto, bool $esTotal, string $motivo): string
+    private function reembolsarEnPaypal(Pago $pago, float $monto, bool $esTotal, string $motivo): array
     {
         $tasa = (float) $pago->tipo_cambio;
         $saldoUsd = round((float) $pago->monto_usd - $pago->reembolsos()->get()->sum(fn (Reembolso $r) => round((float) $r->monto / $tasa, 2)), 2);
@@ -336,7 +338,7 @@ class PagoService
         }
 
         try {
-            return $this->paypal->reembolsar((string) ($pago->datos['captura_id'] ?? ''), $usd, $motivo);
+            return [$this->paypal->reembolsar((string) ($pago->datos['captura_id'] ?? ''), $usd, $motivo), $usd];
         } catch (RequestException $e) {
             Log::warning("PayPal rechazó el reembolso del pago {$pago->id}: ".$e->response->body());
             $detalle = $e->response->json('details.0.description') ?? $e->response->json('message') ?? 'error '.$e->response->status();

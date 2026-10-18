@@ -11,7 +11,7 @@
                 <a href="{{ route('pedidos.show', $pedido) }}" class="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200 hover:ring-marca-400">
                     <div>
                         <p class="font-semibold text-slate-900">{{ $pedido->numero }}</p>
-                        <p class="text-xs text-slate-500">{{ $pedido->created_at->translatedFormat('j \d\e F Y, H:i') }} · {{ $pedido->items_count }} artículo(s)</p>
+                        <p class="text-xs text-slate-500">{{ $pedido->created_at->translatedFormat('j \d\e F Y, H:i') }} · {{ $pedido->items_count }} {{ $pedido->items_count === 1 ? 'artículo' : 'artículos' }}</p>
                     </div>
                     <div class="flex items-center gap-4">
                         <span class="rounded-full px-2.5 py-1 text-xs font-semibold {{ $pedido->estado->color() }}">{{ $pedido->estado->etiqueta() }}</span>

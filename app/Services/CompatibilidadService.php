@@ -377,7 +377,7 @@ class CompatibilidadService
         }
 
         if ($gabinete && $discos35 > $gabinete->bahias_35) {
-            return $this->error('R18', 'Faltan bahías de 3.5"', "El gabinete tiene {$gabinete->bahias_35} bahías de 3.5\" para {$discos35} disco(s) duro(s).", [T::Almacenamiento, T::Gabinete]);
+            return $this->error('R18', 'Faltan bahías de 3.5"', "El gabinete tiene {$gabinete->bahias_35} bahías de 3.5\" para {$discos35} ".($discos35 === 1 ? 'disco duro.' : 'discos duros.'), [T::Almacenamiento, T::Gabinete]);
         }
 
         if ($gabinete && $discos25 > $gabinete->bahias_25 + max(0, $gabinete->bahias_35 - $discos35)) {

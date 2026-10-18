@@ -86,7 +86,7 @@ class PedidoActualizado extends Notification
             ],
             EstadoPedido::Cancelado => [
                 'cancelado',
-                'Tu pedido fue cancelado. **Motivo:** '.($pedido->motivo_cancelacion ?: 'no indicado').'.',
+                'Tu pedido fue cancelado. **Motivo:** '.rtrim($pedido->motivo_cancelacion ?: 'no indicado', '. ').'.',
                 'No se realizó ningún cobro y liberamos los productos que tenías apartados. Si todavía los quieres, puedes hacer un pedido nuevo cuando gustes.',
             ],
             default => ['actualizado', "Tu pedido ahora está «{$pedido->estado->etiqueta()}».", 'Te avisaremos por correo en cada paso.'],

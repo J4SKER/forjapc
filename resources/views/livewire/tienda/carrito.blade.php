@@ -46,7 +46,7 @@
             </div>
         </div>
     @else
-        <div class="grid items-start gap-6 lg:grid-cols-12">
+        <div class="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
             <div class="flex flex-col gap-6 lg:col-span-8" wire:loading.class="opacity-60">
                 {{-- Avisos de existencia --}}
                 @foreach ($problemas as $linea)

@@ -1,6 +1,6 @@
 <x-app-layout>
     <div class="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
-        <div class="grid overflow-hidden rounded-xl bg-white shadow-xl ring-1 ring-slate-200/70 lg:min-h-[640px] lg:grid-cols-12">
+        <div class="grid grid-cols-1 overflow-hidden rounded-xl bg-white shadow-xl ring-1 ring-slate-200/70 lg:min-h-[640px] lg:grid-cols-12">
             {{-- Panel de la marca --}}
             <div class="relative hidden flex-col justify-between overflow-hidden bg-marca-800 p-10 text-white lg:col-span-5 lg:flex">
                 <svg class="pointer-events-none absolute inset-0 size-full opacity-10" aria-hidden="true">

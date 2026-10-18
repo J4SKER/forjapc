@@ -268,7 +268,7 @@
             </div>
         </section>
 
-        <div class="grid items-start gap-5 lg:grid-cols-12">
+        <div class="grid grid-cols-1 items-start gap-5 lg:grid-cols-12">
             {{-- Artículos --}}
             <section class="rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200/70 sm:p-6 lg:col-span-8">
                 <h2 class="mb-4 flex items-center gap-2 font-display text-lg font-bold text-slate-900"><x-icono nombre="paquete" class="size-5.5 text-marca-600" /> Artículos ({{ $piezas }})</h2>

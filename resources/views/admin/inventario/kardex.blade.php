@@ -1,7 +1,7 @@
 <x-admin-layout :title="'Kardex · '.$producto->sku">
     <a href="{{ route('admin.inventario.index') }}" class="text-sm text-marca-600 hover:underline">&larr; Volver a inventario</a>
 
-    <div class="mt-4 grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_20rem]">
+    <div class="mt-4 grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_20rem]">
         <section class="rounded-xl bg-white shadow-sm ring-1 ring-slate-200">
             <div class="border-b border-slate-100 px-5 py-4">
                 <h2 class="font-semibold text-slate-900">{{ $producto->nombre }}</h2>

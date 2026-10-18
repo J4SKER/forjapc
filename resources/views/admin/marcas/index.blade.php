@@ -1,5 +1,5 @@
 <x-admin-layout title="Marcas">
-    <div class="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+    <div class="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <div class="overflow-x-auto rounded-xl bg-white shadow-sm ring-1 ring-slate-200">
             <table class="min-w-full divide-y divide-slate-200 text-sm">
                 <thead class="bg-slate-50 text-left text-xs font-semibold tracking-wide text-slate-500 uppercase">

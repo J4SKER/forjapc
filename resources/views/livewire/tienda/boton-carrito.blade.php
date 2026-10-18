@@ -3,9 +3,9 @@
         <div @class(['flex gap-2', 'flex-col sm:flex-row' => $conCantidad, 'mt-3' => ! $conCantidad])>
             @if ($conCantidad)
                 <div class="flex h-12 items-center justify-between rounded-lg bg-slate-200/70 p-1 shadow-inner sm:w-36" x-data="{ maximo: {{ min(10, $producto->disponible()) }} }" role="group" aria-label="Cantidad">
-                    <button type="button" @click="$wire.cantidad = Math.max(1, $wire.cantidad - 1)" class="flex size-10 items-center justify-center rounded bg-white text-lg font-bold text-slate-900 transition hover:bg-slate-100 active:scale-90" aria-label="Disminuir cantidad">−</button>
+                    <button type="button" @click="$wire.cantidad = Math.max(1, $wire.cantidad - 1)" :disabled="$wire.cantidad <= 1" class="flex size-10 disabled:cursor-not-allowed disabled:opacity-40 items-center justify-center rounded bg-white text-lg font-bold text-slate-900 transition hover:bg-slate-100 active:scale-90" aria-label="Disminuir cantidad">−</button>
                     <span x-text="$wire.cantidad" class="w-12 text-center font-bold text-slate-900" aria-live="polite">{{ $cantidad }}</span>
-                    <button type="button" @click="$wire.cantidad = Math.min(maximo, $wire.cantidad + 1)" class="flex size-10 items-center justify-center rounded bg-white text-lg font-bold text-slate-900 transition hover:bg-slate-100 active:scale-90" aria-label="Aumentar cantidad">+</button>
+                    <button type="button" @click="$wire.cantidad = Math.min(maximo, $wire.cantidad + 1)" :disabled="$wire.cantidad >= maximo" :title="$wire.cantidad >= maximo ? 'No hay más unidades disponibles' : null" class="flex size-10 disabled:cursor-not-allowed disabled:opacity-40 items-center justify-center rounded bg-white text-lg font-bold text-slate-900 transition hover:bg-slate-100 active:scale-90" aria-label="Aumentar cantidad">+</button>
                 </div>
             @endif
             <button type="button" wire:click="agregar" wire:loading.attr="disabled"
