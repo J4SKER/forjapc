@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\AsegurarRol;
 use App\Http\Middleware\CabecerasSeguridad;
+use App\Http\Middleware\ConfirmarPassword;
 use App\Http\Middleware\ExigirCambioPassword;
 use App\Http\Middleware\ModoMantenimiento;
 use App\Http\Middleware\SanearEntrada;
@@ -10,6 +11,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Session\Middleware\AuthenticateSession;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -20,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'rol' => AsegurarRol::class,
+            'confirmar.password' => ConfirmarPassword::class,
         ]);
 
         $middleware->validateCsrfTokens(except: ['webhooks/*']);
@@ -31,6 +34,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->web(append: [
+            AuthenticateSession::class,
             VerificarCuentaActiva::class,
             ExigirCambioPassword::class,
             ModoMantenimiento::class,

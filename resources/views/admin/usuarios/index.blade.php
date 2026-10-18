@@ -57,6 +57,7 @@
                                 'bg-slate-100 text-slate-700' => ! $usuario->esPersonal(),
                                 'bg-marca-50 text-marca-700' => $usuario->esPersonal(),
                             ])>{{ $usuario->rol->etiqueta() }}</span>
+                            @if ($usuario->esPropietario())<span class="ml-1 rounded-full bg-marca-800 px-2 py-0.5 text-xs font-semibold text-cian-400">Propietario</span>@endif
                         </td>
                         <td class="px-4 py-3">
                             @if ($usuario->estaBloqueadoTemporalmente())
@@ -72,13 +73,17 @@
                         <td class="px-4 py-3 text-xs text-slate-500">{{ $usuario->ultimo_acceso?->diffForHumans() ?? 'Nunca' }}</td>
                         <td class="px-4 py-3">
                             <div class="flex items-center justify-end gap-3">
-                                @if ($usuario->estaBloqueadoTemporalmente())
+                                @if ($usuario->estaBloqueadoTemporalmente() && Auth::user()->puedeGestionarA($usuario))
                                     <form method="POST" action="{{ route('admin.usuarios.desbloquear', $usuario) }}">
                                         @csrf
                                         <button type="submit" class="text-xs font-semibold text-amber-700 hover:underline">Desbloquear</button>
                                     </form>
                                 @endif
-                                <a href="{{ route('admin.usuarios.edit', $usuario) }}" class="text-xs font-semibold text-marca-600 hover:underline">Editar</a>
+                                @if (Auth::user()->puedeGestionarA($usuario))
+                                    <a href="{{ route('admin.usuarios.edit', $usuario) }}" class="text-xs font-semibold text-marca-600 hover:underline">Editar</a>
+                                @else
+                                    <span class="text-xs text-slate-400" title="Solo el propietario puede modificar cuentas de administrador">Solo propietario</span>
+                                @endif
                             </div>
                         </td>
                     </tr>

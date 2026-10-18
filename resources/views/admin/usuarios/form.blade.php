@@ -36,20 +36,32 @@
             </div>
         </div>
 
-        <fieldset class="rounded-lg border border-slate-200 p-4">
-            <legend class="px-1 text-sm font-medium text-slate-700">{{ $usuario->exists ? 'Cambiar contraseña (opcional)' : 'Contraseña inicial' }}</legend>
-            <div class="grid gap-5 sm:grid-cols-2">
-                <div>
-                    <x-input-label for="password" value="Contraseña" />
-                    <x-text-input id="password" name="password" type="password" class="mt-1 block w-full" autocomplete="new-password" :required="! $usuario->exists" />
-                    <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        @if ($usuario->exists)
+            <p class="flex items-start gap-2 rounded-lg bg-slate-100 px-4 py-3 text-sm text-slate-600">
+                <x-icono nombre="candado" class="mt-0.5 size-4.5 shrink-0 text-marca-600" />
+                <span>La contraseña solo la conoce su dueño. Si la olvidó, usa <strong>«Enviar enlace para restablecer»</strong>: le llegará un correo para que él mismo elija una nueva.</span>
+            </p>
+            <x-input-error :messages="$errors->get('password')" />
+        @else
+            <fieldset class="rounded-lg border border-slate-200 p-4">
+                <legend class="px-1 text-sm font-medium text-slate-700">Contraseña inicial (temporal)</legend>
+                <div class="grid gap-5 sm:grid-cols-2">
+                    <div>
+                        <x-input-label for="password" value="Contraseña" />
+                        <x-text-input id="password" name="password" type="password" class="mt-1 block w-full" autocomplete="new-password" required />
+                        <x-input-error :messages="$errors->get('password')" class="mt-2" />
+                    </div>
+                    <div>
+                        <x-input-label for="password_confirmation" value="Confirmar contraseña" />
+                        <x-text-input id="password_confirmation" name="password_confirmation" type="password" class="mt-1 block w-full" autocomplete="new-password" />
+                    </div>
                 </div>
-                <div>
-                    <x-input-label for="password_confirmation" value="Confirmar contraseña" />
-                    <x-text-input id="password_confirmation" name="password_confirmation" type="password" class="mt-1 block w-full" autocomplete="new-password" />
-                </div>
-            </div>
-        </fieldset>
+                <p class="mt-3 text-xs text-slate-500">Personal: mínimo 10 caracteres con mayúsculas, minúsculas y números. Clientes: mínimo 8. No se aceptan contraseñas que aparezcan en filtraciones conocidas.</p>
+            </fieldset>
+        @endif
+        @unless (collect($roles)->contains(\App\Enums\Rol::Admin))
+            <p class="text-xs text-slate-500">Solo el propietario de la tienda puede nombrar administradores.</p>
+        @endunless
 
         <label class="flex items-center gap-2">
             <input type="hidden" name="activo" value="0">
@@ -76,7 +88,14 @@
                     <dt class="text-slate-500">Correo verificado</dt><dd>{{ $usuario->email_verified_at ? 'Sí' : 'No' }}</dd>
                     <dt class="text-slate-500">NIT</dt><dd>{{ $usuario->nit }}</dd>
                     <dt class="text-slate-500">Contraseña</dt><dd>{{ $usuario->debe_cambiar_password ? 'Temporal (pendiente de cambio)' : 'Definida por el usuario' }}</dd>
+                    @if ($usuario->esPropietario())
+                        <dt class="text-slate-500">Permisos</dt><dd class="font-semibold text-marca-700">Propietario de la tienda</dd>
+                    @endif
                 </dl>
+                <form method="POST" action="{{ route('admin.usuarios.restablecer', $usuario) }}" class="mt-4 border-t border-slate-100 pt-4" onsubmit="return confirm('¿Enviar a {{ $usuario->email }} un enlace para restablecer su contraseña?')">
+                    @csrf
+                    <button type="submit" class="flex w-full items-center justify-center gap-2 rounded-lg bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-200"><x-icono nombre="correo" class="size-4.5" /> Enviar enlace para restablecer</button>
+                </form>
             </section>
 
             <section class="rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200">

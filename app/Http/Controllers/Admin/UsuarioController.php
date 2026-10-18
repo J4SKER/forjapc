@@ -7,11 +7,14 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UsuarioRequest;
 use App\Models\BitacoraAuditoria;
 use App\Models\User;
+use App\Notifications\CuentaModificada;
 use App\Services\BitacoraService;
 use App\Support\Csv;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -87,7 +90,7 @@ class UsuarioController extends Controller
     {
         return view('admin.usuarios.form', [
             'usuario' => new User(['rol' => Rol::Vendedor]),
-            'roles' => Rol::cases(),
+            'roles' => UsuarioRequest::rolesAsignables(request()->user()),
         ]);
     }
 
@@ -109,11 +112,13 @@ class UsuarioController extends Controller
         return redirect()->route('admin.usuarios.index')->with('estado', "Usuario {$usuario->email} creado.");
     }
 
-    public function edit(User $usuario): View
+    public function edit(Request $request, User $usuario): View
     {
+        $this->asegurarGestion($request, $usuario);
+
         return view('admin.usuarios.form', [
             'usuario' => $usuario,
-            'roles' => Rol::cases(),
+            'roles' => UsuarioRequest::rolesAsignables($request->user(), $usuario),
             'direcciones' => $usuario->direcciones()->with('departamento')->orderByDesc('es_principal')->get(),
             'actividad' => BitacoraAuditoria::query()
                 ->with('usuario:id,nombre')
@@ -137,30 +142,83 @@ class UsuarioController extends Controller
         }
 
         $antes = $usuario->only(['nombre', 'email', 'telefono']) + ['rol' => $usuario->rol->value, 'activo' => $usuario->activo];
+        $correoAnterior = $usuario->email;
 
         $usuario->fill($request->safe()->only(['nombre', 'email', 'telefono']));
-        if ($request->filled('password')) {
-            $usuario->password = $request->string('password')->value();
-            $usuario->debe_cambiar_password = true;
-        }
         $usuario->forceFill(['rol' => $nuevoRol, 'activo' => $activo])->save();
 
         $despues = $usuario->only(['nombre', 'email', 'telefono']) + ['rol' => $usuario->rol->value, 'activo' => $usuario->activo];
 
-        if ($antes !== $despues || $request->filled('password')) {
+        if ($antes !== $despues) {
             $this->bitacora->registrar(
                 $antes['rol'] !== $despues['rol'] ? 'rol_cambiado' : 'usuario_actualizado',
                 $usuario,
                 array_diff_assoc($antes, $despues),
-                array_diff_assoc($despues, $antes) + ($request->filled('password') ? ['password' => '(cambiada)'] : []),
+                array_diff_assoc($despues, $antes),
             );
+            $this->avisarCambios($request, $usuario, $antes, $correoAnterior);
         }
 
         return redirect()->route('admin.usuarios.index')->with('estado', "Usuario {$usuario->email} actualizado.");
     }
 
-    public function desbloquear(User $usuario): RedirectResponse
+    /**
+     * Envía al dueño de la cuenta un enlace para que él mismo elija una contraseña nueva:
+     * nadie del personal llega a conocerla.
+     */
+    public function enviarRestablecimiento(Request $request, User $usuario): RedirectResponse
     {
+        $this->asegurarGestion($request, $usuario);
+
+        $estado = Password::sendResetLink(['email' => $usuario->email]);
+        $this->bitacora->registrar('restablecimiento_enviado', $usuario, null, ['email' => $usuario->email]);
+
+        return back()->with('estado', $estado === Password::RESET_LINK_SENT
+            ? "Enviamos a {$usuario->email} un enlace para restablecer su contraseña."
+            : 'No se pudo enviar el enlace ahora (ya se envió uno hace poco). Intenta en unos minutos.');
+    }
+
+    /**
+     * Solo el propietario modifica cuentas de administrador; nadie modifica la del propietario.
+     */
+    private function asegurarGestion(Request $request, User $usuario): void
+    {
+        abort_unless($request->user()->puedeGestionarA($usuario), 403, 'Solo el propietario puede modificar cuentas de administrador.');
+    }
+
+    /**
+     * Aviso de seguridad al afectado (y a su correo anterior, si cambió) con lo que se modificó.
+     *
+     * @param  array<string, mixed>  $antes
+     */
+    private function avisarCambios(Request $request, User $usuario, array $antes, string $correoAnterior): void
+    {
+        $cambios = [];
+        if ($antes['rol'] !== $usuario->rol->value) {
+            $cambios[] = 'Tu rol cambió de «'.Rol::from($antes['rol'])->etiqueta().'» a «'.$usuario->rol->etiqueta().'».';
+        }
+        if ($antes['email'] !== $usuario->email) {
+            $cambios[] = "Tu correo de acceso cambió de {$correoAnterior} a {$usuario->email}.";
+        }
+        if ($antes['activo'] !== $usuario->activo) {
+            $cambios[] = $usuario->activo ? 'Tu cuenta fue activada.' : 'Tu cuenta fue desactivada: ya no puedes iniciar sesión.';
+        }
+        if ($antes['nombre'] !== $usuario->nombre || $antes['telefono'] !== $usuario->telefono) {
+            $cambios[] = 'Se actualizaron tu nombre o tu teléfono.';
+        }
+
+        $aviso = new CuentaModificada($cambios, $request->user()->nombre.' (administración de ForjaPC)');
+        $usuario->notify($aviso);
+
+        if ($correoAnterior !== $usuario->email) {
+            Notification::route('mail', $correoAnterior)->notify($aviso);
+        }
+    }
+
+    public function desbloquear(Request $request, User $usuario): RedirectResponse
+    {
+        $this->asegurarGestion($request, $usuario);
+
         $usuario->forceFill(['bloqueado_hasta' => null, 'intentos_fallidos' => 0])->save();
 
         $this->bitacora->registrar('cuenta_desbloqueada', $usuario);

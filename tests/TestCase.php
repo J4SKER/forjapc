@@ -14,4 +14,22 @@ abstract class TestCase extends BaseTestCase
     protected bool $seed = true;
 
     protected string $seeder = NomenclaturaSeeder::class;
+
+    /**
+     * Las pruebas funcionales parten con la contraseña recién confirmada; las que verifican
+     * la confirmación de acciones sensibles la quitan con sinConfirmarPassword().
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->withSession(['auth.password_confirmed_at' => time()]);
+    }
+
+    protected function sinConfirmarPassword(): static
+    {
+        $this->app['session']->forget('auth.password_confirmed_at');
+
+        return $this;
+    }
 }

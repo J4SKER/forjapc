@@ -10,6 +10,7 @@ use App\Models\OrdenArmado;
 use App\Models\User;
 use App\Services\CarritoService;
 use App\Services\ContabilidadService;
+use App\Support\ReglasPassword;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
@@ -17,6 +18,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\Rules\Password;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -34,6 +36,8 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Route::model('orden', OrdenArmado::class);
+
+        Password::defaults(fn () => ReglasPassword::cliente());
 
         VerifyEmail::toMailUsing(fn (object $usuario, string $url) => (new MailMessage)
             ->subject('Verifica tu correo en ForjaPC')

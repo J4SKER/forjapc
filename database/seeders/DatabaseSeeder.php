@@ -39,7 +39,8 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($cuentas as [$rol, $nombre, $email]) {
-            User::factory()->conRol($rol)->create(['nombre' => $nombre, 'email' => $email]);
+            // El administrador local es además propietario, para probar la gestión de administradores.
+            User::factory()->conRol($rol)->create(['nombre' => $nombre, 'email' => $email, 'es_propietario' => $rol === Rol::Admin]);
         }
 
         $this->call(CatalogoSeeder::class);

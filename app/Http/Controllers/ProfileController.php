@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Notifications\CuentaModificada;
+use App\Services\BitacoraService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 
@@ -26,13 +29,24 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $usuario = $request->user();
+        $correoAnterior = $usuario->email;
+        $usuario->fill($request->safe()->except('password_actual'));
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        if ($usuario->isDirty('email')) {
+            $usuario->email_verified_at = null;
         }
 
-        $request->user()->save();
+        $usuario->save();
+
+        if ($correoAnterior !== $usuario->email) {
+            app(BitacoraService::class)->registrar('correo_cambiado', $usuario, ['email' => $correoAnterior], ['email' => $usuario->email]);
+            $usuario->sendEmailVerificationNotification();
+            Notification::route('mail', $correoAnterior)->notify(new CuentaModificada(
+                ["El correo de acceso de tu cuenta cambió de {$correoAnterior} a {$usuario->email}."],
+                'Alguien con la sesión de tu cuenta iniciada',
+            ));
+        }
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }

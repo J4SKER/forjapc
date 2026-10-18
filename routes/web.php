@@ -91,7 +91,7 @@ Route::middleware(['auth', 'verified', 'rol'])->prefix('admin')->name('admin.')-
         Route::post('pedidos/{pedido}/estado', [Admin\PedidoController::class, 'cambiarEstado'])->name('pedidos.estado');
         Route::post('pedidos/{pedido}/envio', [Admin\PedidoController::class, 'envio'])->name('pedidos.envio');
         Route::post('pedidos/{pedido}/cancelar', [Admin\PedidoController::class, 'cancelar'])->name('pedidos.cancelar');
-        Route::post('pedidos/{pedido}/pagos/{pago}/reembolso', [Admin\PedidoController::class, 'reembolsar'])->name('pedidos.reembolsar');
+        Route::post('pedidos/{pedido}/pagos/{pago}/reembolso', [Admin\PedidoController::class, 'reembolsar'])->middleware('confirmar.password')->name('pedidos.reembolsar');
         Route::post('pagos/{pago}/aprobar', [Admin\PagoController::class, 'aprobar'])->name('pagos.aprobar');
         Route::post('pagos/{pago}/rechazar', [Admin\PagoController::class, 'rechazar'])->name('pagos.rechazar');
     });
@@ -114,13 +114,13 @@ Route::middleware(['auth', 'verified', 'rol'])->prefix('admin')->name('admin.')-
         Route::prefix('contabilidad')->name('contabilidad.')->group(function () {
             Route::get('partidas', [Admin\ContabilidadController::class, 'partidas'])->name('partidas.index');
             Route::get('partidas/nueva', [Admin\ContabilidadController::class, 'create'])->name('partidas.create');
-            Route::post('partidas', [Admin\ContabilidadController::class, 'store'])->name('partidas.store');
+            Route::post('partidas', [Admin\ContabilidadController::class, 'store'])->middleware('confirmar.password')->name('partidas.store');
             Route::get('partidas/{partida}', [Admin\ContabilidadController::class, 'show'])->name('partidas.show');
-            Route::post('partidas/{partida}/revertir', [Admin\ContabilidadController::class, 'revertir'])->name('partidas.revertir');
+            Route::post('partidas/{partida}/revertir', [Admin\ContabilidadController::class, 'revertir'])->middleware('confirmar.password')->name('partidas.revertir');
             Route::get('periodos', [Admin\ContabilidadController::class, 'periodos'])->name('periodos.index');
-            Route::post('periodos/{periodo}/cerrar', [Admin\ContabilidadController::class, 'cerrarPeriodo'])->name('periodos.cerrar');
+            Route::post('periodos/{periodo}/cerrar', [Admin\ContabilidadController::class, 'cerrarPeriodo'])->middleware('confirmar.password')->name('periodos.cerrar');
             Route::get('cuentas', [Admin\ContabilidadController::class, 'cuentas'])->name('cuentas.index');
-            Route::post('cuentas', [Admin\ContabilidadController::class, 'guardarCuenta'])->name('cuentas.store');
+            Route::post('cuentas', [Admin\ContabilidadController::class, 'guardarCuenta'])->middleware('confirmar.password')->name('cuentas.store');
         });
     });
 
@@ -163,15 +163,16 @@ Route::middleware(['auth', 'verified', 'rol'])->prefix('admin')->name('admin.')-
     });
 
     Route::middleware('rol:ADMIN')->group(function () {
-        Route::get('usuarios/exportar', [Admin\UsuarioController::class, 'exportar'])->name('usuarios.exportar');
-        Route::resource('usuarios', Admin\UsuarioController::class)->except(['show', 'destroy']);
-        Route::post('usuarios/{usuario}/desbloquear', [Admin\UsuarioController::class, 'desbloquear'])->name('usuarios.desbloquear');
+        Route::get('usuarios/exportar', [Admin\UsuarioController::class, 'exportar'])->middleware('confirmar.password')->name('usuarios.exportar');
+        Route::resource('usuarios', Admin\UsuarioController::class)->except(['show', 'destroy'])->middleware('confirmar.password');
+        Route::post('usuarios/{usuario}/desbloquear', [Admin\UsuarioController::class, 'desbloquear'])->middleware('confirmar.password')->name('usuarios.desbloquear');
+        Route::post('usuarios/{usuario}/restablecer', [Admin\UsuarioController::class, 'enviarRestablecimiento'])->middleware('confirmar.password')->name('usuarios.restablecer');
 
         Route::get('bitacora', [Admin\BitacoraController::class, 'index'])->name('bitacora.index');
 
         Route::get('parametros', [Admin\ParametroController::class, 'index'])->name('parametros.index');
-        Route::put('parametros', [Admin\ParametroController::class, 'update'])->name('parametros.update');
-        Route::post('parametros/tipo-cambio', [Admin\ParametroController::class, 'guardarTipoCambio'])->name('parametros.tipo-cambio');
+        Route::put('parametros', [Admin\ParametroController::class, 'update'])->middleware('confirmar.password')->name('parametros.update');
+        Route::post('parametros/tipo-cambio', [Admin\ParametroController::class, 'guardarTipoCambio'])->middleware('confirmar.password')->name('parametros.tipo-cambio');
     });
 });
 

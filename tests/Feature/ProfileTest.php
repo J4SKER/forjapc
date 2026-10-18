@@ -31,6 +31,7 @@ class ProfileTest extends TestCase
                 'nombre' => 'Test User',
                 'nit' => 'cf',
                 'email' => 'test@example.com',
+                'password_actual' => 'password',
             ]);
 
         $response

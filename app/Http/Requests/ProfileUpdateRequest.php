@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Models\User;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class ProfileUpdateRequest extends FormRequest
@@ -36,6 +37,21 @@ class ProfileUpdateRequest extends FormRequest
                 'max:255',
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
+            // Cambiar el correo exige la contraseña: con una sesión robada no se puede desviar
+            // la recuperación de la cuenta a otro buzón.
+            'password_actual' => [
+                Rule::requiredIf(fn () => Str::lower((string) $this->input('email')) !== $this->user()->email),
+                'nullable',
+                'current_password',
+            ],
         ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function attributes(): array
+    {
+        return ['password_actual' => 'contraseña actual'];
     }
 }

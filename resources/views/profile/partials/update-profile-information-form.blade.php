@@ -18,10 +18,17 @@
             <x-input-error class="mt-2" :messages="$errors->get('nombre')" />
         </div>
 
-        <div>
+        <div x-data="{ correo: @js(old('email', $user->email)), original: @js($user->email) }">
             <x-input-label for="email" value="Correo electrónico" />
-            <x-text-input id="email" name="email" type="email" class="mt-1 block w-full" :value="old('email', $user->email)" required autocomplete="username" />
+            <x-text-input id="email" name="email" type="email" class="mt-1 block w-full" :value="old('email', $user->email)" required autocomplete="username" x-model="correo" />
             <x-input-error class="mt-2" :messages="$errors->get('email')" />
+
+            <div x-show="correo.trim().toLowerCase() !== original" x-cloak class="mt-3 rounded-lg bg-amber-50 p-3 ring-1 ring-amber-200">
+                <x-input-label for="password_actual" value="Para cambiar tu correo, escribe tu contraseña actual" />
+                <x-text-input id="password_actual" name="password_actual" type="password" class="mt-1 block w-full" autocomplete="current-password" />
+                <p class="mt-1 text-xs text-amber-900">Avisaremos a tu correo anterior y tendrás que verificar el nuevo.</p>
+            </div>
+            <x-input-error class="mt-2" :messages="$errors->get('password_actual')" />
 
             @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail())
                 <p class="mt-2 text-sm text-slate-800">

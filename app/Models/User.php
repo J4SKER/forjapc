@@ -52,6 +52,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'rol' => Rol::class,
+            'es_propietario' => 'boolean',
             'activo' => 'boolean',
             'debe_cambiar_password' => 'boolean',
             'bloqueado_hasta' => 'datetime',
@@ -91,6 +92,31 @@ class User extends Authenticatable implements MustVerifyEmail
     public function esPersonal(): bool
     {
         return $this->rol->esPersonal();
+    }
+
+    /**
+     * Administrador con permiso exclusivo sobre las cuentas de administrador.
+     */
+    public function esPropietario(): bool
+    {
+        return $this->rol === Rol::Admin && $this->es_propietario;
+    }
+
+    /**
+     * Si este usuario puede modificar la cuenta de otro: las de administradores (y la del
+     * propietario) solo las toca el propietario; cada quien puede editarse a sí mismo.
+     */
+    public function puedeGestionarA(User $otro): bool
+    {
+        if ($this->is($otro)) {
+            return true;
+        }
+
+        if ($otro->esPropietario()) {
+            return false;
+        }
+
+        return $otro->rol !== Rol::Admin || $this->esPropietario();
     }
 
     public function estaBloqueadoTemporalmente(): bool
