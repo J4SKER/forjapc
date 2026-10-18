@@ -145,7 +145,15 @@ class UsuarioController extends Controller
         $correoAnterior = $usuario->email;
 
         $usuario->fill($request->safe()->only(['nombre', 'email', 'telefono']));
-        $usuario->forceFill(['rol' => $nuevoRol, 'activo' => $activo])->save();
+        $usuario->forceFill(['rol' => $nuevoRol, 'activo' => $activo]);
+
+        // Un cliente que pasa a ser personal debe elegir una contraseña con las reglas del
+        // personal antes de entrar al panel (la suya pudo ser débil).
+        if ($nuevoRol->esPersonal() && ! Rol::from($antes['rol'])->esPersonal()) {
+            $usuario->debe_cambiar_password = true;
+        }
+
+        $usuario->save();
 
         $despues = $usuario->only(['nombre', 'email', 'telefono']) + ['rol' => $usuario->rol->value, 'activo' => $usuario->activo];
 
@@ -171,7 +179,10 @@ class UsuarioController extends Controller
         $this->asegurarGestion($request, $usuario);
 
         $estado = Password::sendResetLink(['email' => $usuario->email]);
-        $this->bitacora->registrar('restablecimiento_enviado', $usuario, null, ['email' => $usuario->email]);
+
+        if ($estado === Password::RESET_LINK_SENT) {
+            $this->bitacora->registrar('restablecimiento_enviado', $usuario, null, ['email' => $usuario->email]);
+        }
 
         return back()->with('estado', $estado === Password::RESET_LINK_SENT
             ? "Enviamos a {$usuario->email} un enlace para restablecer su contraseña."

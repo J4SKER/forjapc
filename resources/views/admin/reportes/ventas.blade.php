@@ -3,7 +3,7 @@
 
     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         @foreach ([
-            ['Ventas cobradas', 'Q'.number_format($resumen['total'], 2), $resumen['pedidos'].' pedido(s)'],
+            ['Ventas cobradas', 'Q'.number_format($resumen['total'], 2), $resumen['pedidos'].($resumen['pedidos'] === 1 ? ' pedido' : ' pedidos')],
             ['Base imponible', 'Q'.number_format($resumen['base_imponible'], 2), 'IVA Q'.number_format($resumen['iva'], 2)],
             ['Ticket promedio', 'Q'.number_format($resumen['pedidos'] ? $resumen['total'] / $resumen['pedidos'] : 0, 2), 'por pedido'],
             ['Por método de pago', 'PayPal Q'.number_format($resumen['paypal'], 2), 'Transferencia Q'.number_format($resumen['transferencia'], 2)],

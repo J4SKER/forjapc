@@ -20,7 +20,7 @@
             ['LISTO_ENTREGA', 'Listos para entregar', 'tienda', 'bg-marca-100 text-marca-600'],
             ['ENVIADO', 'En camino', 'camion', 'bg-slate-100 text-slate-700'],
         ] as [$estado, $titulo, $icono, $color])
-            <a href="{{ route('admin.pedidos.index', ['estado' => $estado]) }}" class="flex items-center justify-between gap-3 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200/70 transition hover:shadow-md">
+            <a href="{{ route('admin.pedidos.index', [...$filtros, 'estado' => $estado]) }}" class="flex items-center justify-between gap-3 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200/70 transition hover:shadow-md">
                 <span>
                     <span class="block text-[11px] font-bold tracking-wide text-slate-500 uppercase">{{ $titulo }}</span>
                     <span class="mt-1 block font-display text-2xl font-extrabold text-slate-900">{{ $conteos[$estado] ?? 0 }}</span>

@@ -44,13 +44,13 @@ class UsuarioRequest extends FormRequest
     public function rules(): array
     {
         $usuario = $this->route('usuario');
-        $rolNuevo = Rol::tryFrom((string) $this->input('rol'));
+        $rolNuevo = is_string($this->input('rol')) ? Rol::tryFrom($this->input('rol')) : null;
 
         return [
             'nombre' => ['required', 'string', 'max:120'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique(User::class)->ignore($usuario)],
             'telefono' => ['nullable', 'string', 'regex:/^[0-9+\-\s]{8,20}$/'],
-            'rol' => ['required', Rule::in(array_map(fn (Rol $rol) => $rol->value, self::rolesAsignables($this->user(), $usuario)))],
+            'rol' => ['required', 'string', Rule::in(array_map(fn (Rol $rol) => $rol->value, self::rolesAsignables($this->user(), $usuario)))],
             'activo' => ['boolean'],
             // La contraseña solo se define al crear la cuenta (temporal). Después, el dueño la
             // cambia con un enlace de restablecimiento: nadie del personal la conoce.

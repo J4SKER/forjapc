@@ -24,11 +24,23 @@ class ConfirmarPassword
             return $next($request);
         }
 
-        $volverA = $request->isMethodSafe() ? $request->fullUrl() : url()->previous();
-        $request->session()->put('url.intended', $volverA);
+        $request->session()->put('url.intended', $request->isMethodSafe() ? $request->fullUrl() : $this->paginaAnterior($request));
 
         return redirect()->route('password.confirm')->with('estado', $request->isMethodSafe()
             ? 'Por seguridad, confirma tu contraseña para continuar.'
             : 'Por seguridad, confirma tu contraseña. Después vuelve a enviar el formulario.');
+    }
+
+    /**
+     * La página desde la que se envió el formulario, solo si es de este mismo sitio: un Referer
+     * de otro dominio no debe convertirse en destino después de confirmar (redirección abierta).
+     */
+    private function paginaAnterior(Request $request): string
+    {
+        $anterior = url()->previous();
+
+        return parse_url($anterior, PHP_URL_HOST) === $request->getHost()
+            ? $anterior
+            : route('admin.inicio');
     }
 }

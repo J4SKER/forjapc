@@ -27,6 +27,10 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->validateCsrfTokens(except: ['webhooks/*']);
 
+        // Solo se aceptan peticiones dirigidas al dominio de APP_URL (y sus subdominios): así
+        // nadie puede hacer que los enlaces de los correos apunten a otro dominio (Host falso).
+        $middleware->trustHosts();
+
         $middleware->append(CabecerasSeguridad::class);
 
         $middleware->web(prepend: [

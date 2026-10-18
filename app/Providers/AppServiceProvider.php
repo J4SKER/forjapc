@@ -39,12 +39,20 @@ class AppServiceProvider extends ServiceProvider
 
         Password::defaults(fn () => ReglasPassword::cliente());
 
-        VerifyEmail::toMailUsing(fn (object $usuario, string $url) => (new MailMessage)
-            ->subject('Verifica tu correo en ForjaPC')
-            ->greeting('¡Hola, '.strtok($usuario->nombre, ' ').'!')
-            ->line('Gracias por crear tu cuenta. Confirma tu correo para empezar a comprar.')
-            ->action('Verificar mi correo', $url)
-            ->line('Si no creaste una cuenta en ForjaPC, puedes ignorar este mensaje.'));
+        // Una cuenta recién creada recibe la bienvenida; una existente que cambió su correo, la confirmación del cambio.
+        VerifyEmail::toMailUsing(fn (object $usuario, string $url) => $usuario->created_at?->gt(now()->subMinutes(30))
+            ? (new MailMessage)
+                ->subject('Verifica tu correo en ForjaPC')
+                ->greeting('¡Hola, '.strtok($usuario->nombre, ' ').'!')
+                ->line('Gracias por crear tu cuenta. Confirma tu correo para empezar a comprar.')
+                ->action('Verificar mi correo', $url)
+                ->line('Si no creaste una cuenta en ForjaPC, puedes ignorar este mensaje.')
+            : (new MailMessage)
+                ->subject('Confirma tu nuevo correo en ForjaPC')
+                ->greeting('¡Hola, '.strtok($usuario->nombre, ' ').'!')
+                ->line('Cambiaste el correo de tu cuenta de ForjaPC a esta dirección. Confírmalo para seguir comprando y recibir los avisos de tus pedidos.')
+                ->action('Confirmar mi nuevo correo', $url)
+                ->line('Si no hiciste este cambio, no hagas clic y escríbenos de inmediato.'));
 
         ResetPassword::toMailUsing(fn (object $usuario, string $token) => (new MailMessage)
             ->subject('Restablece tu contraseña de ForjaPC')

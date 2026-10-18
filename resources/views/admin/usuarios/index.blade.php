@@ -1,6 +1,6 @@
 <x-admin-layout title="Usuarios">
     <div class="mb-4 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-        <form method="GET" class="grid flex-1 gap-3 sm:grid-cols-4">
+        <form method="GET" class="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
             <div class="sm:col-span-2">
                 <label for="q" class="text-xs font-medium text-slate-600">Buscar</label>
                 <x-text-input id="q" name="q" :value="request('q')" placeholder="Nombre o correo" class="mt-1 block w-full" />
@@ -14,14 +14,15 @@
                     @endforeach
                 </select>
             </div>
-            <div class="flex items-end gap-2">
-                <select name="estado" aria-label="Estado" class="block w-full rounded-lg border-slate-300 text-sm shadow-sm focus:border-marca-500 focus:ring-marca-500">
+            <div>
+                <label for="estado" class="text-xs font-medium text-slate-600">Estado</label>
+                <select id="estado" name="estado" class="mt-1 block w-full rounded-lg border-slate-300 text-sm shadow-sm focus:border-marca-500 focus:ring-marca-500">
                     <option value="">Cualquier estado</option>
                     <option value="inactivos" @selected(request('estado') === 'inactivos')>Inactivos</option>
                     <option value="bloqueados" @selected(request('estado') === 'bloqueados')>Bloqueados</option>
                 </select>
-                <x-secondary-button type="submit">Filtrar</x-secondary-button>
             </div>
+            <div class="flex items-end"><x-secondary-button type="submit" class="w-full justify-center">Filtrar</x-secondary-button></div>
         </form>
         <div class="flex gap-2">
             <a href="{{ route('admin.usuarios.exportar', request()->only(['q', 'rol', 'estado'])) }}" class="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">

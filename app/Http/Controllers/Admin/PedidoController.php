@@ -35,8 +35,8 @@ class PedidoController extends Controller
             'pago' => ['nullable', Rule::enum(MetodoPago::class)], 'entrega' => ['nullable', Rule::in(['ENVIO', 'RECOGER'])],
         ]);
 
-        $consulta = Pedido::query()->with('usuario:id,nombre,email,nit')->withCount('items')
-            ->when($request->filled('estado'), fn (Builder $q) => $q->where('estado', $request->string('estado')->value()))
+        // Filtros comunes; los contadores por estado los respetan todos menos el propio estado.
+        $filtrada = Pedido::query()
             ->when($request->filled('pago'), fn (Builder $q) => $q->where('metodo_pago', $request->string('pago')->value()))
             ->when($request->filled('entrega'), fn (Builder $q) => $q->where('metodo_entrega', $request->string('entrega')->value()))
             ->when($request->filled('desde'), fn (Builder $q) => $q->whereDate('created_at', '>=', $request->date('desde')))
@@ -48,10 +48,13 @@ class PedidoController extends Controller
                     ->orWhereHas('usuario', fn (Builder $u) => $u->where('email', 'like', $termino)->orWhere('nombre', 'like', $termino)));
             });
 
+        $consulta = (clone $filtrada)->with('usuario:id,nombre,email,nit')->withCount('items')
+            ->when($request->filled('estado'), fn (Builder $q) => $q->where('estado', $request->string('estado')->value()));
+
         return view('admin.pedidos.index', [
-            'pedidos' => (clone $consulta)->latest('id')->paginate(20)->withQueryString(),
+            'pedidos' => $consulta->latest('id')->paginate(20)->withQueryString(),
             'estados' => EstadoPedido::cases(),
-            'conteos' => Pedido::query()->selectRaw('estado, COUNT(*) as total')->groupBy('estado')->pluck('total', 'estado')->map(fn ($total) => (int) $total),
+            'conteos' => (clone $filtrada)->selectRaw('estado, COUNT(*) as total')->groupBy('estado')->pluck('total', 'estado')->map(fn ($total) => (int) $total),
         ]);
     }
 
