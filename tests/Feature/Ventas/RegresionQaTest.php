@@ -174,7 +174,7 @@ class RegresionQaTest extends TestCase
     {
         $this->pedidoCon(['logitech-g502-hero' => 1]);
 
-        $this->actingAs($this->vendedor)->get('/admin/pedidos')->assertOk()->assertSee('Pendiente de pago (1)')->assertDontSee('1.00');
+        $this->actingAs($this->vendedor)->get('/admin/pedidos')->assertOk()->assertSeeText('Pendiente de pago (1)')->assertDontSee('1.00');
     }
 
     public function test_def_014_un_texto_con_utf8_invalido_no_provoca_error_500(): void
