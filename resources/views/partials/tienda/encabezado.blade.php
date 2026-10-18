@@ -96,7 +96,9 @@
                 <x-icono nombre="herramienta" class="size-4" /> Arma tu PC
             </a>
             @foreach ($categoriasMenu as $categoria)
-                @php($activa = request()->routeIs('tienda.categoria') && request()->route('slug') === $categoria['slug'])
+                @php
+                    $activa = request()->routeIs('tienda.categoria') && request()->route('slug') === $categoria['slug'];
+                @endphp
                 <a href="{{ route('tienda.categoria', $categoria['slug']) }}" @class([
                     'flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition',
                     'bg-marca-800 text-white' => $activa,

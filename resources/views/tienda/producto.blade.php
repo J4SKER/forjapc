@@ -4,7 +4,7 @@
         $filas = $especificacion ? collect($especificacion->filas()) : collect();
         $columnas = $filas->isEmpty() ? [] : $filas->chunk((int) ceil($filas->count() / 2))->all();
         $garantia = $producto->garantia_meses >= 12 && $producto->garantia_meses % 12 === 0
-            ? ($producto->garantia_meses / 12).' '.Str::plural('año', $producto->garantia_meses / 12)
+            ? ($producto->garantia_meses / 12).' '.($producto->garantia_meses === 12 ? 'año' : 'años')
             : $producto->garantia_meses.' meses';
         $estrellas = fn (float $valor, string $tamano) => collect(range(1, 5))->map(fn ($i) => '<span class="'.$tamano.' '.($i <= round($valor) ? 'text-amber-500' : 'text-slate-300').'" aria-hidden="true">★</span>')->implode('');
     @endphp
@@ -73,7 +73,7 @@
                         <a href="#resenas" class="mt-1 flex items-center gap-2 text-sm">
                             <span class="flex text-lg leading-none">{!! $estrellas($calificacion, 'text-lg') !!}</span>
                             <span class="font-bold text-slate-900">{{ $calificacion }}</span>
-                            <span class="text-slate-500">({{ $resenas->count() }} {{ Str::plural('opinión', $resenas->count()) }})</span>
+                            <span class="text-slate-500">({{ $resenas->count() }} {{ $resenas->count() === 1 ? 'opinión' : 'opiniones' }})</span>
                         </a>
                     @endif
                 </div>
@@ -98,7 +98,7 @@
                         @if ($producto->stockBajo())
                             ¡Últimas {{ $producto->disponible() }} unidades para entrega inmediata!
                         @else
-                            En existencia ({{ $producto->disponible() }} {{ Str::plural('unidad', $producto->disponible()) }} para entrega inmediata)
+                            En existencia ({{ $producto->disponible() }} {{ $producto->disponible() === 1 ? 'unidad' : 'unidades' }} para entrega inmediata)
                         @endif
                     </p>
                 @else
@@ -184,12 +184,14 @@
                         @endif
                         <h2 class="mt-1 font-display text-lg font-bold text-slate-900">Opiniones de clientes</h2>
                         <p class="text-sm text-slate-500">
-                            {{ $resenas->isEmpty() ? 'Aún no hay opiniones de este producto.' : 'Basado en '.$resenas->count().' '.Str::plural('opinión', $resenas->count()).' de clientes que lo recibieron.' }}
+                            {{ $resenas->isEmpty() ? 'Aún no hay opiniones de este producto.' : 'Basado en '.$resenas->count().' '.($resenas->count() === 1 ? 'opinión' : 'opiniones').' de clientes que lo recibieron.' }}
                         </p>
                     </div>
                 </div>
                 @if ($resenas->isNotEmpty())
-                    @php($cinco = (int) round($resenas->where('calificacion', 5)->count() / $resenas->count() * 100))
+                    @php
+                        $cinco = (int) round($resenas->where('calificacion', 5)->count() / $resenas->count() * 100);
+                    @endphp
                     <div class="flex w-full flex-col gap-1 rounded-lg bg-slate-100/80 p-3 md:w-64">
                         <div class="flex items-center justify-between text-xs text-slate-500"><span>5 estrellas</span><span class="font-bold text-slate-900">{{ $cinco }}%</span></div>
                         <div class="h-2 w-full overflow-hidden rounded-full bg-slate-200"><div class="h-2 rounded-full bg-amber-500" style="width: {{ $cinco }}%"></div></div>

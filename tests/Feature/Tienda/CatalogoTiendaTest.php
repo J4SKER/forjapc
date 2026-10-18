@@ -5,6 +5,8 @@ namespace Tests\Feature\Tienda;
 use App\Livewire\Tienda\Catalogo;
 use App\Models\Categoria;
 use App\Models\Producto;
+use App\Models\ResenaProducto;
+use App\Models\User;
 use App\Models\Socket;
 use Database\Seeders\CatalogoSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -88,6 +90,24 @@ class CatalogoTiendaTest extends TestCase
 
         $this->get('/producto/amd-ryzen-5-7600')->assertNotFound();
         $this->get('/categoria/procesadores')->assertDontSee('AMD Ryzen 5 7600');
+    }
+
+    public function test_la_ficha_muestra_el_resumen_de_opiniones_aprobadas(): void
+    {
+        $producto = Producto::query()->where('slug', 'amd-ryzen-5-7600')->firstOrFail();
+        foreach ([5, 4] as $calificacion) {
+            (new ResenaProducto)->forceFill([
+                'producto_id' => $producto->id, 'usuario_id' => User::factory()->create(['nombre' => 'Ana López'])->id,
+                'calificacion' => $calificacion, 'titulo' => 'Muy buen procesador', 'comentario' => 'Rinde muy bien en juegos.',
+                'estado' => 'APROBADA', 'compra_verificada' => true,
+            ])->save();
+        }
+
+        $this->get('/producto/amd-ryzen-5-7600')->assertOk()
+            ->assertSee('Basado en 2 opiniones')
+            ->assertSee('50%')
+            ->assertSee('Compra verificada')
+            ->assertSee('Muy buen procesador');
     }
 
     public function test_el_inicio_muestra_ofertas_y_destacados(): void
