@@ -34,7 +34,7 @@ class PedidoController extends Controller
         $pagos->sincronizarPaypal($pedido);
 
         return view('cuenta.pedidos.show', [
-            'pedido' => $pedido->load(['items.producto', 'historial', 'pagos', 'departamento', 'ordenesArmado']),
+            'pedido' => $pedido->load(['items.producto.categoria', 'historial', 'pagos', 'departamento', 'ordenesArmado']),
             'paypalClientId' => $paypal->configurado() ? $paypal->clientId() : null,
             'cuentaBancaria' => ParametroSistema::valor('cuenta_bancaria_depositos'),
         ]);
