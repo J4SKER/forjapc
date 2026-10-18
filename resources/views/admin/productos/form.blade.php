@@ -15,8 +15,8 @@
         @endif
 
         <div class="space-y-6">
-            <section class="space-y-5 rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-                <h2 class="font-semibold text-slate-900">Datos generales</h2>
+            <section class="space-y-5 rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200/70">
+                <h2 class="flex items-center gap-2.5 border-b border-slate-100 pb-3 font-display text-lg font-bold text-slate-900"><span class="flex size-7 items-center justify-center rounded-lg bg-marca-800 text-xs font-bold text-cian-400">1</span>Datos generales</h2>
 
                 <div class="grid gap-5 sm:grid-cols-2">
                     <div>
@@ -69,9 +69,9 @@
 
             {{-- Especificaciones técnicas según el tipo de componente --}}
             @foreach ($campos as $tipo => $definiciones)
-                <fieldset x-show="tipo === '{{ $tipo }}'" x-cloak :disabled="tipo !== '{{ $tipo }}'" class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+                <fieldset x-show="tipo === '{{ $tipo }}'" x-cloak :disabled="tipo !== '{{ $tipo }}'" class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200/70">
                     <legend class="sr-only">Especificaciones técnicas</legend>
-                    <h2 class="font-semibold text-slate-900">Especificaciones técnicas · {{ \App\Enums\TipoComponente::from($tipo)->etiqueta() }}</h2>
+                    <h2 class="flex items-center gap-2.5 border-b border-slate-100 pb-3 font-display text-lg font-bold text-slate-900"><span class="flex size-7 items-center justify-center rounded-lg bg-marca-800 text-xs font-bold text-cian-400">2</span>Especificaciones técnicas · {{ \App\Enums\TipoComponente::from($tipo)->etiqueta() }}</h2>
                     <p class="text-xs text-slate-500">El configurador de PC usa estos datos para validar la compatibilidad.</p>
 
                     <div class="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -127,8 +127,8 @@
             @endforeach
 
             {{-- Imágenes --}}
-            <section class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-                <h2 class="font-semibold text-slate-900">Imágenes</h2>
+            <section class="rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200/70">
+                <h2 class="flex items-center gap-2.5 border-b border-slate-100 pb-3 font-display text-lg font-bold text-slate-900"><span class="flex size-7 items-center justify-center rounded-lg bg-marca-800 text-xs font-bold text-cian-400">3</span>Imágenes</h2>
                 @if ($producto->exists && $producto->imagenes->isNotEmpty())
                     <div class="mt-4 flex flex-wrap gap-3">
                         @foreach ($producto->imagenes as $imagen)
@@ -149,9 +149,9 @@
         </div>
 
         {{-- Precio y publicación --}}
-        <aside class="space-y-6 xl:sticky xl:top-20">
-            <section class="space-y-4 rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-                <h2 class="font-semibold text-slate-900">Precio y publicación</h2>
+        <aside class="space-y-6 xl:sticky xl:top-24">
+            <section class="space-y-4 rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200/70">
+                <h2 class="flex items-center gap-2.5 border-b border-slate-100 pb-3 font-display text-lg font-bold text-slate-900"><span class="flex size-7 items-center justify-center rounded-lg bg-marca-800 text-xs font-bold text-cian-400">4</span>Precio y publicación</h2>
                 <div>
                     <x-input-label for="precio" value="Precio (Q, IVA incluido)" />
                     <x-text-input id="precio" name="precio" type="number" step="0.01" min="0.01" class="mt-1 block w-full" :value="old('precio', $producto->precio)" required />
@@ -191,8 +191,8 @@
             </section>
 
             @if ($producto->exists)
-                <section class="rounded-xl bg-white p-6 text-sm shadow-sm ring-1 ring-slate-200">
-                    <h2 class="font-semibold text-slate-900">Inventario</h2>
+                <section class="rounded-xl bg-white p-6 text-sm shadow-sm ring-1 ring-slate-200/70">
+                    <h2 class="flex items-center gap-2.5 border-b border-slate-100 pb-3 font-display text-lg font-bold text-slate-900"><span class="flex size-7 items-center justify-center rounded-lg bg-marca-800 text-xs font-bold text-cian-400">5</span>Inventario</h2>
                     <dl class="mt-3 grid grid-cols-2 gap-y-1.5">
                         <dt class="text-slate-500">Existencia</dt><dd class="text-right font-semibold">{{ $producto->existencia }}</dd>
                         <dt class="text-slate-500">Reservado</dt><dd class="text-right">{{ $producto->reservado }}</dd>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\EstadoPedido;
+use App\Enums\MetodoPago;
 use App\Http\Controllers\Controller;
 use App\Models\Pago;
 use App\Models\Pedido;
@@ -29,10 +30,15 @@ class PedidoController extends Controller
 
     public function index(Request $request): View
     {
-        $request->validate(['desde' => ['nullable', 'date'], 'hasta' => ['nullable', 'date']]);
+        $request->validate([
+            'desde' => ['nullable', 'date'], 'hasta' => ['nullable', 'date'],
+            'pago' => ['nullable', Rule::enum(MetodoPago::class)], 'entrega' => ['nullable', Rule::in(['ENVIO', 'RECOGER'])],
+        ]);
 
-        $consulta = Pedido::query()->with('usuario:id,nombre,email')
+        $consulta = Pedido::query()->with('usuario:id,nombre,email,nit')->withCount('items')
             ->when($request->filled('estado'), fn (Builder $q) => $q->where('estado', $request->string('estado')->value()))
+            ->when($request->filled('pago'), fn (Builder $q) => $q->where('metodo_pago', $request->string('pago')->value()))
+            ->when($request->filled('entrega'), fn (Builder $q) => $q->where('metodo_entrega', $request->string('entrega')->value()))
             ->when($request->filled('desde'), fn (Builder $q) => $q->whereDate('created_at', '>=', $request->date('desde')))
             ->when($request->filled('hasta'), fn (Builder $q) => $q->whereDate('created_at', '<=', $request->date('hasta')))
             ->when($request->filled('q'), function (Builder $q) use ($request) {
