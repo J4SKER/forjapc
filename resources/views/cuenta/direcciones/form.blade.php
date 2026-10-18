@@ -4,7 +4,7 @@
         <h1 class="text-2xl font-extrabold text-slate-900">{{ $direccion->exists ? 'Editar dirección' : 'Nueva dirección' }}</h1>
     </x-slot>
 
-    <div class="mx-auto grid max-w-7xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[16rem_1fr] lg:px-8">
+    <div class="mx-auto grid max-w-7xl items-start gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[17rem_1fr] lg:px-8">
         @include('cuenta.partials.menu')
 
         <form method="POST" action="{{ $direccion->exists ? route('direcciones.update', $direccion) : route('direcciones.store') }}"
