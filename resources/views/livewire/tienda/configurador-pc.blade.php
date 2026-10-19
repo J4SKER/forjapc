@@ -162,7 +162,7 @@
                         <h2 class="flex items-center gap-2 font-display text-lg font-bold text-slate-900"><x-icono nombre="monitor" class="size-5.5 text-marca-600" /> Tu configuración</h2>
                         <span class="rounded bg-white px-2 py-0.5 text-xs font-bold text-marca-600 shadow-sm">{{ $elegidos }} / {{ count($pasos) }}</span>
                     </div>
-                    <div class="h-2 w-full overflow-hidden rounded-full bg-slate-200"><div class="h-full rounded-full bg-marca-600 transition-all duration-500" style="width: {{ round($elegidos / count($pasos) * 100) }}%"></div></div>
+                    <div class="h-2 w-full overflow-hidden rounded-full bg-slate-200"><div class="h-full rounded-full bg-marca-600 transition-all duration-500" data-ancho="{{ round($elegidos / count($pasos) * 100) }}%"></div></div>
                 </div>
 
                 <ul class="flex flex-col gap-1.5">
@@ -211,7 +211,7 @@
                 <div class="flex flex-col gap-1.5 rounded bg-slate-100/80 p-3 text-sm">
                     <div class="flex items-center justify-between"><span class="font-semibold text-slate-800">⚡ Consumo estimado</span><span class="font-bold text-slate-900">{{ $consumo }} W</span></div>
                     <div class="flex items-center justify-between text-slate-600"><span>Fuente recomendada</span><span @class(['font-bold', 'text-emerald-700' => $fuenteRecomendada, 'text-slate-400' => ! $fuenteRecomendada])>{{ $fuenteRecomendada ? $fuenteRecomendada.' W o más' : '—' }}</span></div>
-                    <div class="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-slate-200" title="Consumo frente a la fuente recomendada"><div class="h-full rounded-full bg-marca-600" style="width: {{ $carga }}%"></div></div>
+                    <div class="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-slate-200" title="Consumo frente a la fuente recomendada"><div class="h-full rounded-full bg-marca-600" data-ancho="{{ $carga }}%"></div></div>
                 </div>
 
                 {{-- Compatibilidad --}}
@@ -266,11 +266,11 @@
                     @guest <p class="text-xs text-slate-500">Inicia sesión para guardar y compartir tu configuración.</p> @endguest
 
                     @if ($codigoGuardado)
-                        <div x-data="{ copiado: false }" class="rounded bg-slate-100 p-2 text-xs">
+                        <div x-data="copiar" class="rounded bg-slate-100 p-2 text-xs">
                             <p class="text-slate-500">Enlace para compartir:</p>
                             <div class="mt-1 flex gap-2">
                                 <input type="text" readonly value="{{ route('tienda.configurador.ver', $codigoGuardado) }}" aria-label="Enlace para compartir" class="min-w-0 flex-1 rounded border-slate-200 bg-white text-xs" x-ref="enlace">
-                                <button type="button" @click="navigator.clipboard.writeText($refs.enlace.value); copiado = true; setTimeout(() => copiado = false, 2000)" class="font-semibold text-marca-600" x-text="copiado ? 'Copiado' : 'Copiar'"></button>
+                                <button type="button" @click="copiar($refs.enlace)" class="font-semibold text-marca-600" x-text="copiado ? 'Copiado' : 'Copiar'"></button>
                             </div>
                         </div>
                     @endif

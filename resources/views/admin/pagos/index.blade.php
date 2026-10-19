@@ -32,7 +32,7 @@
 
                 @if ($pago->estado === \App\Enums\EstadoPago::Pendiente && $pago->comprobante_ruta)
                     <div class="mt-3 flex flex-wrap items-start gap-3 border-t border-slate-100 pt-3">
-                        <form method="POST" action="{{ route('admin.pagos.aprobar', $pago) }}" onsubmit="return confirm('¿Confirmas que el dinero ya está en la cuenta?')">
+                        <form method="POST" action="{{ route('admin.pagos.aprobar', $pago) }}" data-confirmar="¿Confirmas que el dinero ya está en la cuenta?">
                             @csrf
                             <button type="submit" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">Aprobar pago</button>
                         </form>

@@ -22,17 +22,15 @@
         </div>
 
         <form method="POST" action="{{ route('checkout.store') }}"
-              x-data="{
-                  entrega: @js(old('metodo_entrega', $principal ? 'ENVIO' : 'RECOGER')),
-                  direccion: @js((string) old('direccion_id', $principal?->id)),
-                  pago: @js(old('metodo_pago', $paypalDisponible ? 'PAYPAL' : 'TRANSFERENCIA')),
-                  nit: @js($nitInicial),
-                  tarifas: @js($tarifas),
-                  base: {{ $base }},
-                  get envio() { return this.entrega === 'ENVIO' ? (this.tarifas[this.direccion] ?? 0) : 0 },
-                  get esCf() { return this.nit.trim().toUpperCase() === 'CF' },
-                  q(v) { return 'Q' + v.toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) },
-              }"
+              x-data="checkout($el)"
+              data-inicial="{{ json_encode([
+                  'entrega' => old('metodo_entrega', $principal ? 'ENVIO' : 'RECOGER'),
+                  'direccion' => (string) old('direccion_id', $principal?->id),
+                  'pago' => old('metodo_pago', $paypalDisponible ? 'PAYPAL' : 'TRANSFERENCIA'),
+                  'nit' => $nitInicial,
+                  'tarifas' => (object) $tarifas,
+                  'base' => (float) $base,
+              ]) }}"
               class="grid grid-cols-1 items-start gap-6 pb-10 lg:grid-cols-12">
             @csrf
 
@@ -130,7 +128,7 @@
                     <div class="flex flex-col gap-4">
                         <label class="flex cursor-pointer items-center justify-between gap-3 rounded-lg bg-slate-100/80 p-4 select-none">
                             <span class="flex items-center gap-3">
-                                <input type="checkbox" :checked="esCf" @change="nit = $event.target.checked ? 'CF' : ''; $nextTick(() => ! esCf && $refs.nit.focus())" class="size-5 rounded text-marca-600 focus:ring-0">
+                                <input type="checkbox" :checked="esCf" @change="alternarCf($event)" class="size-5 rounded text-marca-600 focus:ring-0">
                                 <span class="font-display font-bold text-slate-900">Consumidor final (CF)</span>
                             </span>
                             <span class="hidden text-xs text-slate-500 sm:inline">Si no necesitas factura con tu NIT</span>

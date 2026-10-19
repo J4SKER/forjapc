@@ -97,7 +97,7 @@
                         @endphp
                         <div class="group relative flex h-full flex-1 flex-col items-center justify-end gap-1">
                             <span class="pointer-events-none absolute -top-1 z-10 hidden -translate-y-full rounded bg-marca-800 px-2 py-1 text-[10px] font-semibold whitespace-nowrap text-white group-hover:block">{{ \Carbon\Carbon::parse($dia['fecha'])->translatedFormat('D j') }}: {{ $q($dia['total']) }}</span>
-                            <div @class(['w-full rounded-t transition', 'bg-acento-500' => $esHoy, 'bg-marca-500 group-hover:bg-marca-600' => ! $esHoy]) style="height: {{ max(2, $dia['total'] / $maximo * 100) }}%"></div>
+                            <div @class(['w-full rounded-t transition', 'bg-acento-500' => $esHoy, 'bg-marca-500 group-hover:bg-marca-600' => ! $esHoy]) data-alto="{{ max(2, $dia['total'] / $maximo * 100) }}%"></div>
                             <span @class(['text-[10px]', 'font-bold text-acento-600' => $esHoy, 'text-slate-400' => ! $esHoy])>{{ $esHoy ? 'Hoy' : \Carbon\Carbon::parse($dia['fecha'])->format('d') }}</span>
                         </div>
                     @endforeach

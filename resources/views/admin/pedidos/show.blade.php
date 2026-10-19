@@ -77,7 +77,7 @@
                         @if ($puedeGestionar && $pago->estado === EstadoPago::Aprobado && $pago->saldoReembolsable() > 0)
                             <details class="mt-2">
                                 <summary class="cursor-pointer text-xs font-semibold text-acento-700">Reembolsar (disponible Q{{ number_format($pago->saldoReembolsable(), 2) }})</summary>
-                                <form method="POST" action="{{ route('admin.pedidos.reembolsar', [$pedido, $pago]) }}" class="mt-2 grid gap-2 sm:grid-cols-3" onsubmit="return confirm('¿Registrar el reembolso?')">
+                                <form method="POST" action="{{ route('admin.pedidos.reembolsar', [$pedido, $pago]) }}" class="mt-2 grid gap-2 sm:grid-cols-3" data-confirmar="¿Registrar el reembolso?">
                                     @csrf
                                     <x-text-input name="monto" type="number" step="0.01" :value="$pago->saldoReembolsable()" aria-label="Monto" required />
                                     <x-text-input name="motivo" placeholder="Motivo" class="sm:col-span-2" required />
@@ -147,7 +147,7 @@
                 @endif
 
                 @if ($pedido->estaPendienteDePago())
-                    <form method="POST" action="{{ route('admin.pedidos.cancelar', $pedido) }}" class="space-y-2 rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200" onsubmit="return confirm('¿Cancelar el pedido y liberar las reservas?')">
+                    <form method="POST" action="{{ route('admin.pedidos.cancelar', $pedido) }}" class="space-y-2 rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200" data-confirmar="¿Cancelar el pedido y liberar las reservas?">
                         @csrf
                         <h2 class="font-semibold text-slate-900">Cancelar pedido</h2>
                         <x-text-input name="motivo" placeholder="Motivo" class="block w-full" required />

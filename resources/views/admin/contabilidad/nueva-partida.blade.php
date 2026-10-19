@@ -6,12 +6,7 @@
     <a href="{{ route('admin.contabilidad.partidas.index') }}" class="text-sm text-marca-600 hover:underline">&larr; Volver a partidas</a>
 
     <form method="POST" action="{{ route('admin.contabilidad.partidas.store') }}" class="mt-4 max-w-4xl space-y-5 rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200"
-          x-data="{
-              lineas: @js(array_values($lineas)),
-              get debe() { return this.lineas.reduce((s, l) => s + (Number(l.debe) || 0), 0) },
-              get haber() { return this.lineas.reduce((s, l) => s + (Number(l.haber) || 0), 0) },
-              get cuadra() { return this.debe > 0 && Math.abs(this.debe - this.haber) < 0.005 },
-          }">
+          x-data="formPartida($el)" data-inicial="{{ json_encode(['lineas' => array_values($lineas)]) }}">
         @csrf
         <div class="grid gap-4 sm:grid-cols-4">
             <div>
@@ -32,22 +27,22 @@
                 <template x-for="(linea, i) in lineas" :key="i">
                     <tr>
                         <td class="py-1.5">
-                            <select :name="`lineas[${i}][codigo]`" x-model="linea.codigo" aria-label="Cuenta" class="w-full rounded-lg border-slate-300 text-sm">
+                            <select :name="'lineas[' + i + '][codigo]'" x-model="linea.codigo" aria-label="Cuenta" class="w-full rounded-lg border-slate-300 text-sm">
                                 <option value="">Selecciona una cuenta…</option>
                                 @foreach ($cuentas as $cuenta)
                                     <option value="{{ $cuenta->codigo }}">{{ $cuenta->codigo }} · {{ $cuenta->nombre }}</option>
                                 @endforeach
                             </select>
                         </td>
-                        <td class="px-2 py-1.5"><input type="number" step="0.01" min="0" :name="`lineas[${i}][debe]`" x-model="linea.debe" @input="if (linea.debe) linea.haber = ''" aria-label="Debe" class="w-full rounded-lg border-slate-300 text-sm"></td>
-                        <td class="px-2 py-1.5"><input type="number" step="0.01" min="0" :name="`lineas[${i}][haber]`" x-model="linea.haber" @input="if (linea.haber) linea.debe = ''" aria-label="Haber" class="w-full rounded-lg border-slate-300 text-sm"></td>
+                        <td class="px-2 py-1.5"><input type="number" step="0.01" min="0" :name="'lineas[' + i + '][debe]'" x-model="linea.debe" @input="soloDebe(linea)" aria-label="Debe" class="w-full rounded-lg border-slate-300 text-sm"></td>
+                        <td class="px-2 py-1.5"><input type="number" step="0.01" min="0" :name="'lineas[' + i + '][haber]'" x-model="linea.haber" @input="soloHaber(linea)" aria-label="Haber" class="w-full rounded-lg border-slate-300 text-sm"></td>
                         <td><button type="button" @click="lineas.splice(i, 1)" x-show="lineas.length > 2" class="text-slate-400 hover:text-acento-600" aria-label="Quitar línea"><x-icono nombre="cerrar" class="size-4" /></button></td>
                     </tr>
                 </template>
             </tbody>
             <tfoot class="border-t border-slate-200 font-semibold">
                 <tr>
-                    <td class="py-2"><button type="button" @click="lineas.push({ codigo: '', debe: '', haber: '' })" class="text-sm font-semibold text-marca-600 hover:underline">+ Agregar línea</button></td>
+                    <td class="py-2"><button type="button" @click="agregar()" class="text-sm font-semibold text-marca-600 hover:underline">+ Agregar línea</button></td>
                     <td class="px-2 py-2" x-text="'Q' + debe.toFixed(2)"></td>
                     <td class="px-2 py-2" x-text="'Q' + haber.toFixed(2)"></td>
                     <td></td>

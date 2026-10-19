@@ -20,7 +20,7 @@
                         </td>
                         <td class="px-4 py-3 text-right">
                             @if (! $periodo->estaCerrado() && Auth::user()->tieneRolEfectivo(\App\Enums\Rol::Admin, \App\Enums\Rol::Contador))
-                                <form method="POST" action="{{ route('admin.contabilidad.periodos.cerrar', $periodo) }}" onsubmit="return confirm('¿Cerrar {{ $periodo->nombre() }}? No se podrán registrar más partidas en ese mes.')">
+                                <form method="POST" action="{{ route('admin.contabilidad.periodos.cerrar', $periodo) }}" data-confirmar="¿Cerrar {{ $periodo->nombre() }}? No se podrán registrar más partidas en ese mes.">
                                     @csrf
                                     <button type="submit" class="text-xs font-semibold text-acento-700 hover:underline">Cerrar período</button>
                                 </form>

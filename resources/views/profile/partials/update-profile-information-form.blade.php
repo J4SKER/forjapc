@@ -59,7 +59,7 @@
             <x-primary-button>Guardar</x-primary-button>
 
             @if (session('status') === 'profile-updated')
-                <p x-data="{ show: true }" x-show="show" x-transition x-init="setTimeout(() => show = false, 2000)" class="text-sm text-emerald-700">Guardado.</p>
+                <p x-data="avisoTemporal" x-show="show" x-transition class="text-sm text-emerald-700">Guardado.</p>
             @endif
         </div>
     </form>

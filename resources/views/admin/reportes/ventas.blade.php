@@ -22,7 +22,7 @@
         <div class="mt-4 flex h-48 items-end gap-1 overflow-x-auto" role="img" aria-label="Gráfica de ventas por día">
             @foreach ($por_dia as $dia)
                 <div class="group flex min-w-4 flex-1 flex-col items-center justify-end" title="{{ \Carbon\Carbon::parse($dia['fecha'])->format('d/m') }}: Q{{ number_format($dia['total'], 2) }} ({{ $dia['pedidos'] }} pedidos)">
-                    <div class="w-full rounded-t bg-marca-500 transition group-hover:bg-acento-500" style="height: {{ max(2, $dia['total'] / $maximo * 100) }}%"></div>
+                    <div class="w-full rounded-t bg-marca-500 transition group-hover:bg-acento-500" data-alto="{{ max(2, $dia['total'] / $maximo * 100) }}%"></div>
                 </div>
             @endforeach
         </div>

@@ -9,16 +9,8 @@
     <a href="{{ route('admin.compras.index') }}" class="text-sm text-marca-600 hover:underline">&larr; Volver a compras</a>
 
     <form method="POST" action="{{ $compra->exists ? route('admin.compras.update', $compra) : route('admin.compras.store') }}"
-          x-data="{
-              lineas: @js(array_values($lineasIniciales)),
-              productos: @js($productos),
-              iva: {{ $iva }},
-              agregar() { this.lineas.push({ producto_id: '', cantidad: 1, costo_unitario: '' }) },
-              quitar(i) { this.lineas.splice(i, 1); if (! this.lineas.length) this.agregar() },
-              sugerirCosto(linea) { const p = this.productos.find(p => p.id == linea.producto_id); if (p && ! linea.costo_unitario && p.costo > 0) linea.costo_unitario = p.costo.toFixed(2) },
-              get subtotal() { return this.lineas.reduce((s, l) => s + (Number(l.cantidad) || 0) * (Number(l.costo_unitario) || 0), 0) },
-              q(v) { return 'Q' + v.toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) },
-          }"
+          x-data="formCompra($el)"
+          data-inicial="{{ json_encode(['lineas' => array_values($lineasIniciales), 'productos' => $productos, 'iva' => (float) $iva]) }}"
           class="mt-4 space-y-6">
         @csrf
         @if ($compra->exists)
@@ -72,16 +64,16 @@
                         <template x-for="(linea, i) in lineas" :key="i">
                             <tr class="border-t border-slate-100">
                                 <td class="px-5 py-2">
-                                    <select :name="`lineas[${i}][producto_id]`" x-model="linea.producto_id" @change="sugerirCosto(linea)" aria-label="Producto" class="w-full rounded-lg border-slate-300 text-sm" required>
+                                    <select :name="'lineas[' + i + '][producto_id]'" x-model="linea.producto_id" @change="sugerirCosto(linea)" aria-label="Producto" class="w-full rounded-lg border-slate-300 text-sm" required>
                                         <option value="">Selecciona…</option>
                                         <template x-for="p in productos" :key="p.id">
                                             <option :value="p.id" x-text="p.texto" :selected="p.id == linea.producto_id"></option>
                                         </template>
                                     </select>
                                 </td>
-                                <td class="px-2 py-2"><input type="number" min="1" :name="`lineas[${i}][cantidad]`" x-model="linea.cantidad" aria-label="Cantidad" class="w-full rounded-lg border-slate-300 text-sm" required></td>
-                                <td class="px-2 py-2"><input type="number" min="0.01" step="0.01" :name="`lineas[${i}][costo_unitario]`" x-model="linea.costo_unitario" aria-label="Costo unitario" class="w-full rounded-lg border-slate-300 text-sm" required></td>
-                                <td class="px-2 py-2 text-right font-medium" x-text="q((Number(linea.cantidad) || 0) * (Number(linea.costo_unitario) || 0))"></td>
+                                <td class="px-2 py-2"><input type="number" min="1" :name="'lineas[' + i + '][cantidad]'" x-model="linea.cantidad" aria-label="Cantidad" class="w-full rounded-lg border-slate-300 text-sm" required></td>
+                                <td class="px-2 py-2"><input type="number" min="0.01" step="0.01" :name="'lineas[' + i + '][costo_unitario]'" x-model="linea.costo_unitario" aria-label="Costo unitario" class="w-full rounded-lg border-slate-300 text-sm" required></td>
+                                <td class="px-2 py-2 text-right font-medium" x-text="q(importe(linea))"></td>
                                 <td class="px-2 py-2"><button type="button" @click="quitar(i)" class="text-slate-400 hover:text-acento-600" aria-label="Quitar fila"><x-icono nombre="cerrar" class="size-4" /></button></td>
                             </tr>
                         </template>

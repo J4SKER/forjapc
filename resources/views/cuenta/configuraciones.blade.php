@@ -32,8 +32,8 @@
                     </ul>
                     <div class="mt-4 flex flex-wrap gap-4 text-sm">
                         <a href="{{ route('tienda.configurador.ver', $configuracion) }}" class="font-semibold text-marca-600 hover:underline">Abrir en el configurador</a>
-                        <button type="button" x-data @click="navigator.clipboard.writeText('{{ route('tienda.configurador.ver', $configuracion) }}'); $el.textContent = 'Enlace copiado'" class="font-semibold text-slate-600 hover:underline">Copiar enlace para compartir</button>
-                        <form method="POST" action="{{ route('configuraciones.destroy', $configuracion) }}" onsubmit="return confirm('¿Eliminar esta configuración?')">
+                        <button type="button" x-data="copiar" data-enlace="{{ route('tienda.configurador.ver', $configuracion) }}" @click="copiar($el.dataset.enlace)" x-text="copiado ? 'Enlace copiado' : 'Copiar enlace para compartir'" class="font-semibold text-slate-600 hover:underline">Copiar enlace para compartir</button>
+                        <form method="POST" action="{{ route('configuraciones.destroy', $configuracion) }}" data-confirmar="¿Eliminar esta configuración?">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="font-semibold text-acento-600 hover:underline">Eliminar</button>

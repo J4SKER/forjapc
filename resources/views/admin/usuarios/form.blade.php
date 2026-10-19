@@ -92,7 +92,7 @@
                         <dt class="text-slate-500">Permisos</dt><dd class="font-semibold text-marca-700">Propietario de la tienda</dd>
                     @endif
                 </dl>
-                <form method="POST" action="{{ route('admin.usuarios.restablecer', $usuario) }}" class="mt-4 border-t border-slate-100 pt-4" onsubmit="return confirm('¿Enviar a {{ $usuario->email }} un enlace para restablecer su contraseña?')">
+                <form method="POST" action="{{ route('admin.usuarios.restablecer', $usuario) }}" class="mt-4 border-t border-slate-100 pt-4" data-confirmar="¿Enviar a {{ $usuario->email }} un enlace para restablecer su contraseña?">
                     @csrf
                     <button type="submit" class="flex w-full items-center justify-center gap-2 rounded-lg bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-200"><x-icono nombre="correo" class="size-4.5" /> Enviar enlace para restablecer</button>
                 </form>

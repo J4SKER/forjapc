@@ -81,7 +81,7 @@
                         <form method="POST" action="{{ route('admin.taller.tomar', $orden) }}">@csrf<x-primary-button class="w-full">{{ $orden->estado === E::Incidencia ? 'Retomar orden' : 'Tomar orden' }}</x-primary-button></form>
                     @endif
                     @if ($orden->estado === E::EnPruebas && ($orden->pruebas['aprobada'] ?? false))
-                        <form method="POST" action="{{ route('admin.taller.completar', $orden) }}" onsubmit="return confirm('¿Marcar el armado como completado?')">@csrf<x-primary-button class="w-full">Completar armado</x-primary-button></form>
+                        <form method="POST" action="{{ route('admin.taller.completar', $orden) }}" data-confirmar="¿Marcar el armado como completado?">@csrf<x-primary-button class="w-full">Completar armado</x-primary-button></form>
                     @endif
                     @if ($enProceso)
                         <form method="POST" action="{{ route('admin.taller.incidencia', $orden) }}" class="space-y-2 border-t border-slate-100 pt-3">

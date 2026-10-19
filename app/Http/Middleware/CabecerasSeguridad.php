@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Vite;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -19,6 +20,9 @@ class CabecerasSeguridad
      */
     public function handle(Request $request, Closure $next): Response
     {
+        // Número único por respuesta: solo los <script> y <style> que lo llevan se ejecutan.
+        Vite::useCspNonce();
+
         $respuesta = $next($request);
 
         $respuesta->headers->set('X-Frame-Options', 'SAMEORIGIN');
@@ -39,19 +43,23 @@ class CabecerasSeguridad
     }
 
     /**
-     * Solo se cargan recursos del propio sitio, de Bunny Fonts y de PayPal (botones, ventana
-     * de pago y campos de tarjeta). Un script inyectado no puede traer código de otro dominio
-     * ni enviar datos fuera. 'unsafe-inline' y 'unsafe-eval' siguen permitidos porque Alpine,
-     * Livewire y el SDK de PayPal los necesitan. No se aplica con el servidor de Vite en desarrollo.
+     * Política estricta: el navegador solo ejecuta los scripts y estilos que llevan el nonce de
+     * esta respuesta (Vite, Livewire y el SDK de PayPal) y lo que ellos carguen ('strict-dynamic').
+     * Un <script>, un <style> o un atributo on*="" inyectado en la página no se ejecuta, y no hay
+     * 'unsafe-eval': Livewire usa su versión CSP de Alpine, que evalúa las expresiones de las
+     * vistas sin eval() y sin acceso a variables globales. 'self' y https: solo los usan los
+     * navegadores antiguos que no entienden 'strict-dynamic'. No se aplica con el servidor de
+     * Vite en desarrollo.
      */
     private function politicaDeContenido(Request $request): string
     {
+        $nonce = "'nonce-".Vite::cspNonce()."'";
         $paypal = 'https://*.paypal.com https://*.paypalobjects.com';
 
         $directivas = [
             "default-src 'self'",
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' {$paypal}",
-            "style-src 'self' 'unsafe-inline' https://fonts.bunny.net",
+            "script-src {$nonce} 'strict-dynamic' 'self' https:",
+            "style-src 'self' {$nonce} https://fonts.bunny.net",
             "font-src 'self' data: https://fonts.bunny.net",
             "img-src 'self' data: blob: {$paypal}",
             "connect-src 'self' {$paypal}",

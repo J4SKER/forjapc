@@ -7,7 +7,7 @@
 
     <form method="POST" enctype="multipart/form-data"
           action="{{ $producto->exists ? route('admin.productos.update', $producto) : route('admin.productos.store') }}"
-          x-data="{ categoria: '{{ old('categoria_id', $producto->categoria_id) }}', tipos: @js($tiposPorCategoria), get tipo() { return this.tipos[this.categoria] ?? null } }"
+          x-data="formProducto($el)" data-inicial="{{ json_encode(['categoria' => (string) old('categoria_id', $producto->categoria_id), 'tipos' => (object) $tiposPorCategoria]) }}"
           class="mt-4 grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
         @csrf
         @if ($producto->exists)
@@ -217,7 +217,7 @@
             </form>
         @endforeach
 
-        <form method="POST" action="{{ route('admin.productos.destroy', $producto) }}" class="mt-6" onsubmit="return confirm('¿Eliminar este producto del catálogo? Su historial se conserva.')">
+        <form method="POST" action="{{ route('admin.productos.destroy', $producto) }}" class="mt-6" data-confirmar="¿Eliminar este producto del catálogo? Su historial se conserva.">
             @csrf
             @method('DELETE')
             <button type="submit" class="text-sm font-semibold text-acento-700 hover:underline">Eliminar producto del catálogo</button>

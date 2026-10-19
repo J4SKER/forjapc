@@ -58,7 +58,7 @@
                 <div class="overflow-x-auto py-2">
                     <ol class="relative flex min-w-160 items-start justify-between">
                         <span class="absolute top-5 right-10 left-10 h-1 rounded bg-slate-200"></span>
-                        <span class="absolute top-5 left-10 h-1 rounded bg-marca-600 transition-all" style="width: calc(({{ $avance }} / 100) * (100% - 5rem))"></span>
+                        <span class="absolute top-5 left-10 h-1 rounded bg-marca-600 transition-all" data-ancho="calc(({{ $avance }} / 100) * (100% - 5rem))"></span>
                         @foreach ($etapas as $indice => $etapa)
                             @php
                                 $registro = $alcanzadas->get($etapa->value);
@@ -100,11 +100,11 @@
 
                 <div class="mb-5 flex flex-col gap-3 rounded-lg bg-slate-100/80 p-4 md:flex-row md:items-center">
                     <div class="flex w-fit items-center gap-2 rounded-lg bg-white px-3 py-1.5 shadow-sm"
-                         x-data="{ s: {{ max(0, (int) now()->diffInSeconds($pedido->vence_at, false)) }}, d(n) { return String(n).padStart(2, '0') } }" x-init="setInterval(() => s = Math.max(0, s - 1), 1000)">
+                         x-data="cuentaRegresiva({{ max(0, (int) now()->diffInSeconds($pedido->vence_at, false)) }})">
                         <x-icono nombre="candado" class="size-5 text-red-600" />
                         <span class="flex flex-col">
                             <span class="text-[10px] text-slate-500 uppercase">Tiempo restante</span>
-                            <span class="font-display text-lg font-bold tracking-wider text-red-600" x-text="d(Math.floor(s / 3600)) + ':' + d(Math.floor((s % 3600) / 60)) + ':' + d(s % 60)"></span>
+                            <span class="font-display text-lg font-bold tracking-wider text-red-600" x-text="texto"></span>
                         </span>
                     </div>
                     <p class="text-sm text-slate-600">Las unidades están apartadas hasta el <strong>{{ $pedido->vence_at->translatedFormat('j \d\e F \a \l\a\s H:i') }}</strong>. Si no recibimos el pago para entonces, el pedido se cancela y los productos vuelven a la venta.</p>
@@ -123,42 +123,13 @@
                                 <p class="mt-auto text-xs text-slate-500">Modo de pruebas (sandbox): usa una cuenta de comprador de PayPal Developer. No se cobra dinero real.</p>
                             </div>
                             <div class="relative isolate z-0 rounded-xl bg-white p-4 shadow-sm" x-data="pagoPaypal('{{ route('pedidos.paypal.orden', $pedido) }}', '{{ route('pedidos.paypal.capturar', $pedido) }}')">
-                                <div id="paypal-botones"></div>
+                                <div x-ref="botones"></div>
                                 <p x-show="error" x-text="error" x-cloak class="mt-2 text-sm text-red-600"></p>
                                 <p x-show="procesando" x-cloak class="mt-2 text-sm text-slate-600">Confirmando el pago…</p>
                             </div>
                         </div>
-                        <script src="https://www.paypal.com/sdk/js?client-id={{ $paypalClientId }}&currency=USD&intent=capture&locale=es_GT{{ config('services.paypal.modo') === 'live' ? '' : '&buyer-country=GT' }}"></script>
-                        <script>
-                            function pagoPaypal(urlOrden, urlCaptura) {
-                                return {
-                                    error: null,
-                                    procesando: false,
-                                    init() {
-                                        const token = document.querySelector('meta[name=csrf-token]').content;
-                                        const enviar = (url, cuerpo = {}) => fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': token, 'Accept': 'application/json' }, body: JSON.stringify(cuerpo) })
-                                            .then(async r => { const d = await r.json(); if (! r.ok) throw new Error(d.error || 'Error'); return d; });
-
-                                        paypal.Buttons({
-                                            createOrder: () => enviar(urlOrden).then(d => d.id).catch(e => { this.error = e.message; throw e; }),
-                                            onApprove: (datos) => {
-                                                this.procesando = true;
-                                                const capturar = () => enviar(urlCaptura, { orderID: datos.orderID });
-                                                // Si la conexión falla, se reintenta y luego se recarga: al abrir el pedido el servidor consulta PayPal y aplica el pago.
-                                                return capturar()
-                                                    .catch(e => e instanceof TypeError ? new Promise(r => setTimeout(r, 2000)).then(capturar) : Promise.reject(e))
-                                                    .then(d => window.location = d.redireccion)
-                                                    .catch(e => {
-                                                        if (e instanceof TypeError) { this.error = 'Se interrumpió la conexión. Estamos confirmando tu pago con PayPal…'; setTimeout(() => window.location.reload(), 4000); return; }
-                                                        this.procesando = false; this.error = e.message;
-                                                    });
-                                            },
-                                            onError: () => { this.error = 'PayPal no pudo procesar el pago. Intenta de nuevo.'; },
-                                        }).render('#paypal-botones');
-                                    },
-                                };
-                            }
-                        </script>
+                        {{-- El SDK lleva el nonce de la CSP; con data-csp-nonce PayPal también lo usa en los estilos que inserta. --}}
+                        <script src="https://www.paypal.com/sdk/js?client-id={{ $paypalClientId }}&currency=USD&intent=capture&locale=es_GT{{ config('services.paypal.modo') === 'live' ? '' : '&buyer-country=GT' }}" nonce="{{ Vite::cspNonce() }}" data-csp-nonce="{{ Vite::cspNonce() }}"></script>
                     @else
                         <p class="mb-4 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900">El pago con PayPal no está disponible en este momento. Puedes pagar por transferencia usando el formulario de abajo.</p>
                     @endif
@@ -169,11 +140,11 @@
                         <div class="flex flex-col gap-3 lg:col-span-5">
                             <h3 class="font-display font-bold text-slate-900">Datos para depositar</h3>
                             <p class="text-sm text-slate-600">Transfiere o deposita exactamente <strong class="text-slate-900">Q{{ number_format($pedido->total, 2) }}</strong> y escribe <strong class="text-slate-900">{{ $pedido->numero }}</strong> como referencia.</p>
-                            <div class="flex flex-col gap-2 rounded-lg bg-slate-100/80 p-4 shadow-sm" x-data="{ copiado: false }">
+                            <div class="flex flex-col gap-2 rounded-lg bg-slate-100/80 p-4 shadow-sm" x-data="copiar">
                                 <span class="text-[11px] font-bold tracking-wide text-slate-500 uppercase">Cuenta de ForjaPC</span>
                                 <div class="flex items-center justify-between gap-2 rounded bg-white px-3 py-2">
                                     <span class="font-bold tracking-wide text-slate-900 select-all" x-ref="cuenta">{{ $cuentaBancaria }}</span>
-                                    <button type="button" @click="navigator.clipboard.writeText($refs.cuenta.innerText); copiado = true; setTimeout(() => copiado = false, 2000)" class="shrink-0 text-xs font-semibold text-marca-600" x-text="copiado ? 'Copiado' : 'Copiar'">Copiar</button>
+                                    <button type="button" @click="copiar($refs.cuenta)" class="shrink-0 text-xs font-semibold text-marca-600" x-text="copiado ? 'Copiado' : 'Copiar'">Copiar</button>
                                 </div>
                             </div>
                         </div>
@@ -210,14 +181,14 @@
                                         <label for="monto" class="text-sm font-semibold text-slate-800">Monto depositado (Q) <span class="text-red-600">*</span></label>
                                         <input id="monto" name="monto" type="number" step="0.01" value="{{ old('monto', $pedido->total) }}" required class="w-full rounded-lg border-0 bg-white px-3 py-2 text-sm ring-1 ring-slate-200 focus:ring-2 focus:ring-marca-600">
                                     </div>
-                                    <div class="flex flex-col gap-1" x-data="{ archivo: '' }">
+                                    <div class="flex flex-col gap-1" x-data="archivoElegido">
                                         <span class="text-sm font-semibold text-slate-800">Foto o PDF del comprobante <span class="text-red-600">*</span></span>
                                         <label for="comprobante" class="flex cursor-pointer flex-col items-center justify-center gap-1 rounded-lg bg-white p-4 text-center ring-1 ring-slate-200 ring-dashed transition hover:bg-slate-100">
                                             <x-icono nombre="paquete" class="size-8 text-marca-600" />
                                             <span class="text-sm font-semibold text-slate-800" x-text="archivo || 'Haz clic para elegir la imagen o el PDF'">Haz clic para elegir la imagen o el PDF</span>
                                             <span class="text-xs text-slate-500">JPG, PNG o PDF de hasta 4 MB</span>
                                         </label>
-                                        <input id="comprobante" type="file" name="comprobante" accept="image/*,application/pdf" required class="sr-only" @change="archivo = $event.target.files[0]?.name ?? ''">
+                                        <input id="comprobante" type="file" name="comprobante" accept="image/*,application/pdf" required class="sr-only" @change="elegir($event)">
                                     </div>
                                     <x-input-error :messages="$errors->all()" />
                                     <button type="submit" class="flex w-full items-center justify-center gap-2 rounded-lg bg-marca-600 py-3 font-display font-bold text-white shadow-sm transition hover:bg-marca-700">

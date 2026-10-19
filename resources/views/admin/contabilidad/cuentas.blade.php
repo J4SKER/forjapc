@@ -9,7 +9,7 @@
                     @foreach ($cuentas as $cuenta)
                         <tr @class(['bg-slate-50 font-semibold' => ! $cuenta->acepta_movimientos])>
                             <td class="px-4 py-2 font-mono text-xs">{{ $cuenta->codigo }}</td>
-                            <td class="px-4 py-2" style="padding-left: {{ 1 + substr_count($cuenta->codigo, '.') * 1.25 }}rem">
+                            <td class="px-4 py-2" data-sangria="{{ 1 + substr_count($cuenta->codigo, '.') * 1.25 }}rem">
                                 @if ($cuenta->acepta_movimientos)
                                     <a href="{{ route('admin.reportes.libro-mayor', ['cuenta' => $cuenta->id]) }}" class="hover:text-marca-700">{{ $cuenta->nombre }}</a>
                                 @else

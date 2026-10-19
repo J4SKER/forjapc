@@ -18,7 +18,7 @@
                 </div>
                 <p class="mt-3 text-xs text-slate-500">Técnico: {{ $orden->tecnico?->nombre ?? 'sin asignar' }} · Creada {{ $orden->created_at->diffForHumans() }}</p>
                 @php($hechos = collect($orden->checklist ?? [])->filter()->count())
-                <div class="mt-2 h-1.5 rounded-full bg-slate-100"><div class="h-1.5 rounded-full bg-marca-500" style="width: {{ round($hechos / count(\App\Models\OrdenArmado::CHECKLIST) * 100) }}%"></div></div>
+                <div class="mt-2 h-1.5 rounded-full bg-slate-100"><div class="h-1.5 rounded-full bg-marca-500" data-ancho="{{ round($hechos / count(\App\Models\OrdenArmado::CHECKLIST) * 100) }}%"></div></div>
             </a>
         @empty
             <p class="rounded-xl bg-white p-10 text-center text-slate-500 shadow-sm ring-1 ring-slate-200 md:col-span-2 xl:col-span-3">No hay órdenes de armado {{ $estado ? 'en este estado' : 'en curso' }}.</p>

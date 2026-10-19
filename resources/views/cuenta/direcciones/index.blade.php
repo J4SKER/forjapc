@@ -45,7 +45,7 @@
                             <p class="mt-2 text-xs text-slate-500">Envío: Q{{ number_format($direccion->departamento->tarifa_envio, 2) }} · {{ $direccion->departamento->dias_entrega }} {{ $direccion->departamento->dias_entrega == 1 ? 'día hábil' : 'días hábiles' }}</p>
                             <div class="mt-4 flex gap-4 text-sm">
                                 <a href="{{ route('direcciones.edit', $direccion) }}" class="font-medium text-marca-600 hover:underline">Editar</a>
-                                <form method="POST" action="{{ route('direcciones.destroy', $direccion) }}" onsubmit="return confirm('¿Eliminar esta dirección?')">
+                                <form method="POST" action="{{ route('direcciones.destroy', $direccion) }}" data-confirmar="¿Eliminar esta dirección?">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="font-medium text-acento-600 hover:underline">Eliminar</button>

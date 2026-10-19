@@ -51,12 +51,12 @@
 
             @if ($compra->esBorrador())
                 <section class="space-y-2 rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
-                    <form method="POST" action="{{ route('admin.compras.recibir', $compra) }}" onsubmit="return confirm('¿Confirmas que la mercadería llegó completa? Las existencias se actualizarán.')">
+                    <form method="POST" action="{{ route('admin.compras.recibir', $compra) }}" data-confirmar="¿Confirmas que la mercadería llegó completa? Las existencias se actualizarán.">
                         @csrf
                         <x-primary-button class="w-full">Recibir mercadería</x-primary-button>
                     </form>
                     <a href="{{ route('admin.compras.edit', $compra) }}" class="block rounded-lg border border-slate-300 px-4 py-2 text-center text-sm font-semibold text-slate-700 hover:bg-slate-50">Editar borrador</a>
-                    <form method="POST" action="{{ route('admin.compras.anular', $compra) }}" onsubmit="return confirm('¿Anular esta compra?')">
+                    <form method="POST" action="{{ route('admin.compras.anular', $compra) }}" data-confirmar="¿Anular esta compra?">
                         @csrf
                         <button type="submit" class="w-full rounded-lg px-4 py-2 text-sm font-semibold text-acento-700 hover:bg-red-50">Anular compra</button>
                     </form>

@@ -36,7 +36,7 @@
             @if ($partida->reversion)
                 <a href="{{ route('admin.contabilidad.partidas.show', $partida->reversion) }}" class="block rounded-xl bg-amber-50 p-4 text-sm text-amber-900 ring-1 ring-amber-200">Esta partida fue revertida por la <strong>{{ $partida->reversion->referencia() }}</strong></a>
             @elseif ($partida->tipo !== 'REVERSION' && Auth::user()->tieneRolEfectivo(\App\Enums\Rol::Admin, \App\Enums\Rol::Contador))
-                <form method="POST" action="{{ route('admin.contabilidad.partidas.revertir', $partida) }}" class="space-y-2 rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200" onsubmit="return confirm('¿Registrar una partida que revierte esta?')">
+                <form method="POST" action="{{ route('admin.contabilidad.partidas.revertir', $partida) }}" class="space-y-2 rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200" data-confirmar="¿Registrar una partida que revierte esta?">
                     @csrf
                     <h2 class="font-semibold text-slate-900">Anular con reversión</h2>
                     <p class="text-xs text-slate-500">Las partidas no se borran: se registra otra con los montos invertidos.</p>

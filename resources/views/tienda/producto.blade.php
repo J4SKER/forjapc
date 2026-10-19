@@ -194,7 +194,7 @@
                     @endphp
                     <div class="flex w-full flex-col gap-1 rounded-lg bg-slate-100/80 p-3 md:w-64">
                         <div class="flex items-center justify-between text-xs text-slate-500"><span>5 estrellas</span><span class="font-bold text-slate-900">{{ $cinco }}%</span></div>
-                        <div class="h-2 w-full overflow-hidden rounded-full bg-slate-200"><div class="h-2 rounded-full bg-amber-500" style="width: {{ $cinco }}%"></div></div>
+                        <div class="h-2 w-full overflow-hidden rounded-full bg-slate-200"><div class="h-2 rounded-full bg-amber-500" data-ancho="{{ $cinco }}%"></div></div>
                     </div>
                 @endif
             </div>
