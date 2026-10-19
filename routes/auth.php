@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\Auth\SegundoFactorController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
@@ -53,6 +54,11 @@ Route::middleware('auth')->group(function () {
         ->name('password.confirm');
 
     Route::post('confirm-password', [ConfirmablePasswordController::class, 'store'])->middleware('throttle:5,1');
+
+    // Segundo factor del personal: código de 6 dígitos enviado al correo.
+    Route::get('verificacion-dos-pasos', [SegundoFactorController::class, 'show'])->name('dos-pasos.show');
+    Route::post('verificacion-dos-pasos', [SegundoFactorController::class, 'store'])->middleware('throttle:10,1')->name('dos-pasos.store');
+    Route::post('verificacion-dos-pasos/reenviar', [SegundoFactorController::class, 'reenviar'])->middleware('throttle:3,5')->name('dos-pasos.reenviar');
 
     Route::put('password', [PasswordController::class, 'update'])->name('password.update');
 

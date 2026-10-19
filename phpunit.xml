@@ -29,6 +29,7 @@
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
+        <env name="FORJAPC_DOS_PASOS" value="false"/>
         <env name="PAYPAL_CLIENT_ID" value=""/>
         <env name="PAYPAL_SECRET" value=""/>
         <env name="PAYPAL_WEBHOOK_ID" value=""/>

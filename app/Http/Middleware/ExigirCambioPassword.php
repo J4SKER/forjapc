@@ -17,7 +17,7 @@ class ExigirCambioPassword
      *
      * @var list<string>
      */
-    private const RUTAS_PERMITIDAS = ['profile.edit', 'password.update', 'logout', 'verification.*'];
+    private const RUTAS_PERMITIDAS = ['profile.edit', 'password.update', 'logout', 'verification.*', 'dos-pasos.*'];
 
     /**
      * Handle an incoming request.

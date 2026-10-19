@@ -2,11 +2,13 @@
 
 use App\Http\Middleware\AsegurarRol;
 use App\Http\Middleware\CabecerasSeguridad;
+use App\Http\Middleware\CerrarSesionInactiva;
 use App\Http\Middleware\ConfirmarPassword;
 use App\Http\Middleware\ExigirCambioPassword;
 use App\Http\Middleware\ModoMantenimiento;
 use App\Http\Middleware\SanearEntrada;
 use App\Http\Middleware\VerificarCuentaActiva;
+use App\Http\Middleware\VerificarSegundoFactor;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -40,6 +42,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             AuthenticateSession::class,
             VerificarCuentaActiva::class,
+            CerrarSesionInactiva::class,
+            VerificarSegundoFactor::class,
             ExigirCambioPassword::class,
             ModoMantenimiento::class,
         ]);
