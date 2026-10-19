@@ -12,14 +12,20 @@ use Symfony\Component\HttpFoundation\Cookie as CookieRespuesta;
 
 /**
  * Segundo factor del personal: un código de 6 dígitos enviado al correo, de un solo uso,
- * con vencimiento y límite de intentos. El equipo se puede recordar durante unos días con una
- * cookie cifrada que deja de valer si la contraseña cambia.
+ * con vencimiento fijo y límite de intentos. Si se acumulan demasiados fallos en una hora
+ * (aunque se pidan códigos nuevos) la cuenta se bloquea. El equipo se puede recordar unos días
+ * con una cookie cifrada que deja de valer si la contraseña cambia.
  */
 class SegundoFactorService
 {
     public const SESION = 'dos_pasos_verificado';
 
     public const COOKIE = 'forjapc_equipo';
+
+    /** Fallos permitidos en una hora, sumando todos los códigos, antes de bloquear la cuenta. */
+    public const FALLOS_POR_HORA = 10;
+
+    public const BLOQUEADA = 'bloqueada';
 
     public function __construct(private BitacoraService $bitacora) {}
 
@@ -36,9 +42,10 @@ class SegundoFactorService
     public function enviarCodigo(User $usuario): void
     {
         $codigo = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-        Cache::put($this->clave($usuario), ['hash' => Hash::make($codigo), 'intentos' => 0], now()->addMinutes((int) config('forjapc.dos_pasos.minutos_validez')));
+        $minutos = (int) config('forjapc.dos_pasos.minutos_validez');
+        Cache::put($this->clave($usuario), ['hash' => Hash::make($codigo), 'intentos' => 0, 'vence' => now()->addMinutes($minutos)->timestamp], now()->addMinutes($minutos));
 
-        $usuario->notify(new CodigoAcceso($codigo, (int) config('forjapc.dos_pasos.minutos_validez')));
+        $usuario->notify(new CodigoAcceso($codigo, $minutos));
     }
 
     public function hayCodigoVigente(User $usuario): bool
@@ -47,7 +54,8 @@ class SegundoFactorService
     }
 
     /**
-     * Comprueba el código. Devuelve null si es correcto o el mensaje de error.
+     * Comprueba el código. Devuelve null si es correcto, el mensaje de error o BLOQUEADA si la
+     * cuenta se bloqueó por exceso de fallos.
      */
     public function verificar(Request $request, User $usuario, string $codigo): ?string
     {
@@ -58,25 +66,47 @@ class SegundoFactorService
         }
 
         if (! Hash::check($codigo, $datos['hash'])) {
-            $datos['intentos']++;
-            $this->bitacora->registrar('segundo_factor_fallido', $usuario, null, ['intento' => $datos['intentos']]);
-
-            if ($datos['intentos'] >= (int) config('forjapc.dos_pasos.intentos_maximos')) {
-                Cache::forget($this->clave($usuario));
-
-                return 'Demasiados intentos. Te enviamos un código nuevo.';
-            }
-
-            Cache::put($this->clave($usuario), $datos, now()->addMinutes((int) config('forjapc.dos_pasos.minutos_validez')));
-
-            return 'El código no es correcto.';
+            return $this->registrarFallo($usuario, $datos);
         }
 
         Cache::forget($this->clave($usuario));
+        Cache::forget($this->claveFallos($usuario));
         $request->session()->put(self::SESION, $usuario->id);
         $this->bitacora->registrar('segundo_factor_superado', $usuario);
 
         return null;
+    }
+
+    /**
+     * @param  array{hash: string, intentos: int, vence: int}  $datos
+     */
+    private function registrarFallo(User $usuario, array $datos): string
+    {
+        $fallosHora = (int) Cache::get($this->claveFallos($usuario), 0) + 1;
+        Cache::put($this->claveFallos($usuario), $fallosHora, now()->addHour());
+        $this->bitacora->registrar('segundo_factor_fallido', $usuario, null, ['fallos_en_la_hora' => $fallosHora]);
+
+        if ($fallosHora >= self::FALLOS_POR_HORA) {
+            Cache::forget($this->clave($usuario));
+            Cache::forget($this->claveFallos($usuario));
+            $usuario->forceFill(['bloqueado_hasta' => now()->addHour()])->save();
+            $this->bitacora->registrar('cuenta_bloqueada', $usuario, null, ['motivo' => 'Demasiados códigos de verificación incorrectos']);
+
+            return self::BLOQUEADA;
+        }
+
+        $datos['intentos']++;
+
+        if ($datos['intentos'] >= (int) config('forjapc.dos_pasos.intentos_maximos')) {
+            Cache::forget($this->clave($usuario));
+
+            return 'Demasiados intentos. Te enviamos un código nuevo.';
+        }
+
+        // El vencimiento es fijo: un intento fallido no le da más tiempo al código.
+        Cache::put($this->clave($usuario), $datos, max(1, $datos['vence'] - now()->timestamp));
+
+        return 'El código no es correcto.';
     }
 
     /**
@@ -108,5 +138,10 @@ class SegundoFactorService
     private function clave(User $usuario): string
     {
         return "dos_pasos:{$usuario->id}";
+    }
+
+    private function claveFallos(User $usuario): string
+    {
+        return "dos_pasos_fallos:{$usuario->id}";
     }
 }

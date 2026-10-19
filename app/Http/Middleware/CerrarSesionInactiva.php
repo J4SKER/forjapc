@@ -28,7 +28,9 @@ class CerrarSesionInactiva
 
         $ultima = (int) $request->session()->get(self::SESION, time());
 
-        if (time() - $ultima > (int) config('forjapc.inactividad_personal') * 60) {
+        // El personal no puede reabrir una sesión vencida con «Recordarme»: debe volver a
+        // escribir su contraseña (si no, la inactividad se saltaría esperando a que venza la sesión).
+        if (Auth::guard('web')->viaRemember() || time() - $ultima > (int) config('forjapc.inactividad_personal') * 60) {
             Auth::guard('web')->logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();

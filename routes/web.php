@@ -46,17 +46,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->names('direcciones');
 
     Route::get('/checkout', [CheckoutController::class, 'create'])->name('checkout');
-    Route::post('/checkout', [CheckoutController::class, 'store'])->middleware('throttle:10,1')->name('checkout.store');
+    Route::post('/checkout', [CheckoutController::class, 'store'])->middleware('throttle:acciones-cliente')->name('checkout.store');
 
     Route::get('/mi-cuenta/pedidos', [PedidoController::class, 'index'])->name('pedidos.index');
     Route::get('/mi-cuenta/pedidos/{pedido}', [PedidoController::class, 'show'])->name('pedidos.show');
     Route::post('/mi-cuenta/pedidos/{pedido}/cancelar', [PedidoController::class, 'cancelar'])->name('pedidos.cancelar');
-    Route::post('/mi-cuenta/pedidos/{pedido}/transferencia', [PedidoController::class, 'transferencia'])->middleware('throttle:10,1')->name('pedidos.transferencia');
-    Route::post('/mi-cuenta/pedidos/{pedido}/paypal/orden', [PaypalController::class, 'crearOrden'])->middleware('throttle:20,1')->name('pedidos.paypal.orden');
-    Route::post('/mi-cuenta/pedidos/{pedido}/paypal/capturar', [PaypalController::class, 'capturar'])->middleware('throttle:20,1')->name('pedidos.paypal.capturar');
+    Route::post('/mi-cuenta/pedidos/{pedido}/transferencia', [PedidoController::class, 'transferencia'])->middleware('throttle:acciones-cliente')->name('pedidos.transferencia');
+    Route::post('/mi-cuenta/pedidos/{pedido}/paypal/orden', [PaypalController::class, 'crearOrden'])->middleware('throttle:pagos-paypal')->name('pedidos.paypal.orden');
+    Route::post('/mi-cuenta/pedidos/{pedido}/paypal/capturar', [PaypalController::class, 'capturar'])->middleware('throttle:pagos-paypal')->name('pedidos.paypal.capturar');
     Route::get('/pagos/{pago}/comprobante', [PedidoController::class, 'comprobante'])->name('pagos.comprobante');
 
-    Route::post('/producto/{slug}/resenas', [ResenaTiendaController::class, 'store'])->middleware('throttle:10,1')->name('tienda.resenas.store');
+    Route::post('/producto/{slug}/resenas', [ResenaTiendaController::class, 'store'])->middleware('throttle:acciones-cliente')->name('tienda.resenas.store');
 
     Route::get('/mi-cuenta/configuraciones', [ConfiguracionController::class, 'index'])->name('configuraciones.index');
     Route::delete('/mi-cuenta/configuraciones/{configuracion}', [ConfiguracionController::class, 'destroy'])->name('configuraciones.destroy');

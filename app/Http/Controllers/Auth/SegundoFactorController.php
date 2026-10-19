@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\SegundoFactorService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -21,7 +22,12 @@ class SegundoFactorController extends Controller
     {
         $usuario = $request->user();
 
-        if (! $this->segundoFactor->requerido($usuario) || $this->segundoFactor->verificado($request, $usuario)) {
+        // Los clientes no usan segundo factor: vuelven a su cuenta sin generar códigos.
+        if (! $this->segundoFactor->requerido($usuario)) {
+            return redirect()->route('dashboard');
+        }
+
+        if ($this->segundoFactor->verificado($request, $usuario)) {
             return redirect()->intended(route('admin.inicio'));
         }
 
@@ -34,9 +40,19 @@ class SegundoFactorController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $datos = $request->validate(['codigo' => ['required', 'string']], [], ['codigo' => 'código']);
         $usuario = $request->user();
+        abort_unless($this->segundoFactor->requerido($usuario), 404);
+
+        $datos = $request->validate(['codigo' => ['required', 'string']], [], ['codigo' => 'código']);
         $error = $this->segundoFactor->verificar($request, $usuario, preg_replace('/\D/', '', $datos['codigo']));
+
+        if ($error === SegundoFactorService::BLOQUEADA) {
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()->route('login')->withErrors(['email' => 'Bloqueamos tu cuenta por una hora por demasiados códigos incorrectos. Si no fuiste tú, cambia tu contraseña.']);
+        }
 
         if ($error !== null) {
             if (! $this->segundoFactor->hayCodigoVigente($usuario)) {
@@ -53,6 +69,8 @@ class SegundoFactorController extends Controller
 
     public function reenviar(Request $request): RedirectResponse
     {
+        abort_unless($this->segundoFactor->requerido($request->user()), 404);
+
         $this->segundoFactor->enviarCodigo($request->user());
 
         return back()->with('estado', 'Te enviamos un código nuevo. El anterior ya no sirve.');

@@ -14,8 +14,11 @@ use App\Support\ReglasPassword;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
@@ -36,6 +39,16 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Route::model('orden', OrdenArmado::class);
+
+        // Límites de peticiones con contador propio por acción y usuario (el «throttle:N,M»
+        // de Laravel comparte un mismo contador entre todas las rutas de un usuario).
+        $porAccion = fn (int $maximo, int $minutos = 1) => fn (Request $request) => Limit::perMinutes($minutos, $maximo)
+            ->by(($request->route()?->getName() ?? $request->path()).'|'.($request->user()?->getAuthIdentifier() ?? $request->ip()));
+        RateLimiter::for('verificar-codigo', $porAccion(10));
+        RateLimiter::for('reenviar-codigo', $porAccion(3, 5));
+        RateLimiter::for('confirmar-password', $porAccion(5));
+        RateLimiter::for('acciones-cliente', $porAccion(10));
+        RateLimiter::for('pagos-paypal', $porAccion(20));
 
         Password::defaults(fn () => ReglasPassword::cliente());
 

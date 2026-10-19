@@ -53,12 +53,12 @@ Route::middleware('auth')->group(function () {
     Route::get('confirm-password', [ConfirmablePasswordController::class, 'show'])
         ->name('password.confirm');
 
-    Route::post('confirm-password', [ConfirmablePasswordController::class, 'store'])->middleware('throttle:5,1');
+    Route::post('confirm-password', [ConfirmablePasswordController::class, 'store'])->middleware('throttle:confirmar-password');
 
     // Segundo factor del personal: código de 6 dígitos enviado al correo.
     Route::get('verificacion-dos-pasos', [SegundoFactorController::class, 'show'])->name('dos-pasos.show');
-    Route::post('verificacion-dos-pasos', [SegundoFactorController::class, 'store'])->middleware('throttle:10,1')->name('dos-pasos.store');
-    Route::post('verificacion-dos-pasos/reenviar', [SegundoFactorController::class, 'reenviar'])->middleware('throttle:3,5')->name('dos-pasos.reenviar');
+    Route::post('verificacion-dos-pasos', [SegundoFactorController::class, 'store'])->middleware('throttle:verificar-codigo')->name('dos-pasos.store');
+    Route::post('verificacion-dos-pasos/reenviar', [SegundoFactorController::class, 'reenviar'])->middleware('throttle:reenviar-codigo')->name('dos-pasos.reenviar');
 
     Route::put('password', [PasswordController::class, 'update'])->name('password.update');
 

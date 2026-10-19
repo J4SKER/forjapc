@@ -13,6 +13,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\AuthenticateSession;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -47,6 +48,12 @@ return Application::configure(basePath: dirname(__DIR__))
             ExigirCambioPassword::class,
             ModoMantenimiento::class,
         ]);
+
+        // Los controles de la sesión corren antes de buscar los modelos de la URL: sin pasarlos,
+        // un /admin/compras/1 y un /admin/compras/999 responden igual (no se revela qué existe).
+        foreach ([VerificarCuentaActiva::class, CerrarSesionInactiva::class, VerificarSegundoFactor::class, ExigirCambioPassword::class] as $control) {
+            $middleware->prependToPriorityList(before: SubstituteBindings::class, prepend: $control);
+        }
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
