@@ -15,6 +15,8 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\AuthenticateSession;
+use Livewire\Exceptions\MethodNotFoundException;
+use Livewire\Exceptions\NonPublicComponentMethodCall;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -56,6 +58,15 @@ return Application::configure(basePath: dirname(__DIR__))
         }
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        // Una llamada a Livewire manipulada desde la consola (método que no existe o no es público,
+        // argumentos del tipo equivocado como $wire.elegir('abc')) es una solicitud inválida,
+        // no un error del servidor: responde 422 y no llena el registro de errores.
+        $llamadaInvalida = fn (Throwable $e) => $e instanceof MethodNotFoundException
+            || $e instanceof NonPublicComponentMethodCall
+            || ($e instanceof TypeError && preg_match('/^App\\\\Livewire\\\\[\w\\\\]+::\w+\(\): Argument #\d+/', $e->getMessage()) === 1);
+        $exceptions->dontReportWhen($llamadaInvalida);
+        $exceptions->render(fn (Throwable $e) => $llamadaInvalida($e) ? response('Solicitud no válida.', 422) : null);
+
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );

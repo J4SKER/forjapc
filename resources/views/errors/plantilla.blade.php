@@ -18,7 +18,9 @@
             <p class="mt-2 text-slate-600">{{ $mensaje }}</p>
             <div class="mt-6 flex flex-wrap justify-center gap-3">
                 <a href="{{ url('/') }}" class="rounded-lg bg-acento-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-acento-700">Ir a la tienda</a>
-                <a href="{{ url()->previous(url('/')) }}" class="rounded-lg border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">Regresar</a>
+                {{-- Solo se regresa a una página de la propia tienda, nunca a un sitio externo. --}}
+                @php($anterior = url()->previous())
+                <a href="{{ $anterior === url('/') || str_starts_with($anterior, url('/').'/') ? $anterior : url('/') }}" class="rounded-lg border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">Regresar</a>
             </div>
         </main>
     </body>
